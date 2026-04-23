@@ -198,6 +198,24 @@ export function QuoteInvoiceApp() {
         scale: 3,
         useCORS: true,
         backgroundColor: "#ffffff",
+        logging: false,
+        onclone: (clonedDoc) => {
+          clonedDoc.body.style.backgroundColor = "#ffffff";
+          clonedDoc.body.style.color = "#0f172a";
+
+          const clonedTemplate = clonedDoc.getElementById("pdf-template");
+          if (clonedTemplate) {
+            clonedTemplate.style.backgroundColor = "#ffffff";
+            clonedTemplate.style.color = "#0f172a";
+            clonedTemplate.style.borderColor = "#cbd5e1";
+            clonedTemplate.style.setProperty("--background", "#ffffff");
+            clonedTemplate.style.setProperty("--foreground", "#0f172a");
+            clonedTemplate.style.setProperty("--card", "#ffffff");
+            clonedTemplate.style.setProperty("--muted", "#f8fafc");
+            clonedTemplate.style.setProperty("--border", "#cbd5e1");
+            clonedTemplate.style.setProperty("--ring", "#94a3b8");
+          }
+        },
       });
 
       const imageData = canvas.toDataURL("image/jpeg", 0.98);
@@ -238,6 +256,8 @@ export function QuoteInvoiceApp() {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("PDF export failed", error);
     } finally {
       setIsExporting(false);
     }
@@ -489,7 +509,7 @@ export function QuoteInvoiceApp() {
       </section>
 
       <div className="pointer-events-none fixed -left-[9999px] top-0 w-[794px] bg-white" aria-hidden="true" dir="ltr" style={{ fontFamily: '"Inter", sans-serif' }}>
-        <div ref={pdfTemplateRef} className="pdf-sheet min-h-[1123px] w-[794px] px-8 py-6">
+        <div id="pdf-template" ref={pdfTemplateRef} className="pdf-sheet min-h-[1123px] w-[794px] px-8 py-6">
           <header className="pdf-header">
             <div>
               {settings.logoDataUrl ? (
