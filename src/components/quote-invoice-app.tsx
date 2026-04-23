@@ -727,19 +727,26 @@ export function QuoteInvoiceApp() {
 
           <hr className="my-8 border-t border-[#111111]" />
 
-          <section className="mb-8 flex items-start justify-between gap-8">
-            <div>
-              <p className="text-sm font-bold uppercase text-[#111111]">{settings.companyName || "Votre entreprise"}</p>
-              <p className="mt-1 whitespace-pre-line text-sm text-[#111111]">{settings.address || "Adresse"}</p>
-              <p className="text-sm text-[#111111]">{settings.phone || "-"}</p>
+          <section className="mb-8 grid grid-cols-2 gap-6">
+            <div className="border border-[#000000] bg-[#ffffff] p-4">
+              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">Émetteur</p>
+              <p className="mt-2 text-sm font-bold uppercase text-[#111111]">{settings.companyName || "Votre entreprise"}</p>
+              <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-[#111111]">{settings.address || "Adresse"}</p>
+              <p className="mt-1 text-sm text-[#111111]">{settings.phone || "-"}</p>
+              {settings.ice && <p className="mt-1 text-sm text-[#111111]">ICE: {settings.ice}</p>}
             </div>
 
-            <div className="text-right">
-              <p className="text-sm font-bold uppercase text-[#111111]">À L&apos;ATTENTION DE</p>
-              <p className="mt-1 text-sm font-bold text-[#111111]">{clientName || "-"}</p>
-              <p className="text-sm text-[#111111]">{clientPhone || "-"}</p>
+            <div className="border border-[#000000] bg-[#ffffff] p-4 text-right">
+              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">Client</p>
+              <p className="mt-2 text-sm font-bold uppercase text-[#111111]">{clientName || "-"}</p>
+              <p className="mt-1 text-sm text-[#111111]">{clientPhone || "-"}</p>
             </div>
           </section>
+
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs font-black uppercase tracking-[0.08em] text-[#111111]">Détail des prestations</p>
+            <p className="text-xs font-medium text-[#111111]">{items.length} ligne(s)</p>
+          </div>
 
           <table className="w-full border-collapse border-2 border-[#000000]">
             <thead>
@@ -762,9 +769,9 @@ export function QuoteInvoiceApp() {
             </tbody>
           </table>
 
-          <div className="mt-4 flex justify-end">
+          <div className="mt-5 flex justify-end">
             {isVatEnabled ? (
-              <div className="w-72 text-right">
+              <div className="w-80 border border-[#000000] bg-[#ffffff] p-3 text-right">
                 <div className="flex items-center justify-between text-[#111111]">
                   <span className="text-sm font-bold">Total HT</span>
                   <span className="text-sm font-bold">{formatCurrency(totalHT)}</span>
@@ -779,9 +786,11 @@ export function QuoteInvoiceApp() {
                 </div>
               </div>
             ) : (
-              <div className="flex w-72 items-center justify-between bg-[#111111] p-3 text-[#ffffff]">
-                <span className="text-sm font-black">Total Global</span>
-                <strong className="text-lg font-black">{formatCurrency(totalHT)}</strong>
+              <div className="w-80 border border-[#000000] bg-[#ffffff] p-3">
+                <div className="flex items-center justify-between bg-[#111111] p-3 text-[#ffffff]">
+                  <span className="text-sm font-black">Total Global</span>
+                  <strong className="text-lg font-black">{formatCurrency(totalHT)}</strong>
+                </div>
               </div>
             )}
           </div>
