@@ -641,7 +641,7 @@ export function QuoteInvoiceApp() {
         >
           <header className="flex items-start justify-between gap-8">
             <div>
-              <p className="mb-4 text-6xl font-normal uppercase tracking-tight text-[#111111]">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
+              <p className="mb-8 text-6xl font-normal uppercase tracking-tight text-[#111111]">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
               <div className="flex gap-2">
                 <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">
                   {docType === "devis" ? "Devis" : "Facture"} n°{formattedInvoiceNumber}
@@ -650,11 +650,11 @@ export function QuoteInvoiceApp() {
               </div>
             </div>
 
-            <div className="flex min-h-16 min-w-28 items-start justify-end">
+            <div className="flex min-h-32 min-w-40 items-start justify-end">
               {settings.logoDataUrl ? (
-                <img src={settings.logoDataUrl} alt="Logo" className="h-16 max-w-[180px] object-contain" />
+                <img src={settings.logoDataUrl} alt="Logo" className="h-32 w-auto object-contain" />
               ) : (
-                <div className="flex h-16 w-28 items-center justify-center rounded-full border border-[#111111] text-xs font-medium text-[#111111]">
+                <div className="flex h-32 w-40 items-center justify-center rounded-full border border-[#111111] text-xs font-medium text-[#111111]">
                   LOGO
                 </div>
               )}
