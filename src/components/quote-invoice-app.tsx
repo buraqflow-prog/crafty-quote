@@ -699,9 +699,9 @@ export function QuoteInvoiceApp() {
           </table>
 
           <div className="mt-4 flex justify-end">
-            <div className="flex w-64 justify-between bg-[#111111] p-3 font-bold uppercase text-[#ffffff]">
-              <span>Total</span>
-              <strong>{formatCurrency(grandTotal)}</strong>
+            <div className="flex w-64 items-end justify-between border-2 border-[#000000] bg-[#f7f7f4] p-3 uppercase text-[#000000]">
+              <span className="text-xs font-extrabold tracking-wider">Grand Total</span>
+              <strong className="text-lg font-extrabold">{formatCurrency(grandTotal)}</strong>
             </div>
           </div>
 
