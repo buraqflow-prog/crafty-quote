@@ -196,6 +196,7 @@ export function QuoteInvoiceApp() {
   );
   const vatAmount = useMemo(() => (isVatEnabled ? totalHT * (vatRate / 100) : 0), [isVatEnabled, totalHT, vatRate]);
   const totalTTC = useMemo(() => totalHT + vatAmount, [totalHT, vatAmount]);
+  const amountInWords = useMemo(() => toFrenchCurrencyWords(totalTTC), [totalTTC]);
 
   const saveSettings = () => {
     setSettings(settingsDraft);
@@ -795,6 +796,10 @@ export function QuoteInvoiceApp() {
             )}
           </div>
 
+          <p className="mt-8 text-sm font-semibold uppercase italic text-[#111111]">
+            Arrêté le présent {docType === "devis" ? "DEVIS" : "FACTURE"} à la somme de : {amountInWords.toUpperCase()}.
+          </p>
+
           <footer className="mt-10">
             <hr className="mb-2 border-t border-[#111111]" />
             <p className="text-xs font-bold text-[#111111]">Merci pour votre confiance</p>
@@ -829,4 +834,90 @@ function formatCurrency(amount: number) {
     currency: "MAD",
     maximumFractionDigits: 2,
   }).format(amount);
+}
+
+function toFrenchCurrencyWords(value: number) {
+  const safeValue = Number.isFinite(value) ? Math.max(0, Math.round(value * 100) / 100) : 0;
+  const dirhams = Math.floor(safeValue);
+  const centimes = Math.round((safeValue - dirhams) * 100);
+
+  const dirhamWords = toFrenchNumberWords(dirhams);
+  const centimeWords = centimes > 0 ? toFrenchNumberWords(centimes) : "";
+
+  if (centimes > 0) {
+    return `${dirhamWords} Dirhams et ${centimeWords} Centimes`;
+  }
+
+  return `${dirhamWords} Dirhams`;
+}
+
+function toFrenchNumberWords(num: number): string {
+  if (num === 0) return "zéro";
+
+  const units = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
+  const teens = ["dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
+  const tens = ["", "", "vingt", "trente", "quarante", "cinquante", "soixante"];
+
+  const twoDigits = (n: number): string => {
+    if (n < 10) return units[n];
+    if (n < 20) return teens[n - 10];
+    if (n < 70) {
+      const ten = Math.floor(n / 10);
+      const unit = n % 10;
+      if (unit === 0) return tens[ten];
+      if (unit === 1) return `${tens[ten]} et un`;
+      return `${tens[ten]}-${units[unit]}`;
+    }
+    if (n < 80) {
+      if (n === 71) return "soixante et onze";
+      return `soixante-${twoDigits(n - 60)}`;
+    }
+    if (n === 80) return "quatre-vingts";
+    return `quatre-vingt-${twoDigits(n - 80)}`;
+  };
+
+  const threeDigits = (n: number): string => {
+    if (n < 100) return twoDigits(n);
+    const hundred = Math.floor(n / 100);
+    const remainder = n % 100;
+
+    let hundredPart = "";
+    if (hundred === 1) {
+      hundredPart = "cent";
+    } else {
+      hundredPart = `${units[hundred]} cent`;
+      if (remainder === 0) hundredPart += "s";
+    }
+
+    if (remainder === 0) return hundredPart;
+    return `${hundredPart} ${twoDigits(remainder)}`;
+  };
+
+  const scales = [
+    { value: 1_000_000_000, singular: "milliard", plural: "milliards" },
+    { value: 1_000_000, singular: "million", plural: "millions" },
+    { value: 1_000, singular: "mille", plural: "mille" },
+  ];
+
+  let remaining = num;
+  const words: string[] = [];
+
+  for (const scale of scales) {
+    if (remaining >= scale.value) {
+      const count = Math.floor(remaining / scale.value);
+      remaining %= scale.value;
+
+      if (scale.value === 1_000) {
+        words.push(count === 1 ? "mille" : `${toFrenchNumberWords(count)} mille`);
+      } else {
+        words.push(`${toFrenchNumberWords(count)} ${count > 1 ? scale.plural : scale.singular}`);
+      }
+    }
+  }
+
+  if (remaining > 0) {
+    words.push(threeDigits(remaining));
+  }
+
+  return words.join(" ").replace(/\s+/g, " ").trim();
 }
