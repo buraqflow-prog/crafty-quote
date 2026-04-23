@@ -15,6 +15,7 @@ type BusinessSettings = {
   address: string;
   phone: string;
   ice: string;
+  invoiceNumber: string;
   logoDataUrl: string;
 };
 
@@ -32,6 +33,7 @@ const emptySettings: BusinessSettings = {
   address: "",
   phone: "",
   ice: "",
+  invoiceNumber: "",
   logoDataUrl: "",
 };
 
