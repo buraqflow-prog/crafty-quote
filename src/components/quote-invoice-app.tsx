@@ -221,6 +221,7 @@ export function QuoteInvoiceApp() {
             clonedTemplate.style.backgroundColor = "#ffffff";
             clonedTemplate.style.color = "#0f172a";
             clonedTemplate.style.borderColor = "#cbd5e1";
+            clonedTemplate.style.fontFamily = '"Plus Jakarta Sans", "Inter", system-ui, sans-serif';
             clonedTemplate.style.setProperty("--background", "#ffffff");
             clonedTemplate.style.setProperty("--foreground", "#0f172a");
             clonedTemplate.style.setProperty("--card", "#ffffff");
@@ -568,67 +569,69 @@ export function QuoteInvoiceApp() {
         </div>
       </section>
 
-      <div aria-hidden="true" dir="ltr" style={{ fontFamily: '"Inter", sans-serif' }}>
+      <div aria-hidden="true" dir="ltr" style={{ fontFamily: '"Plus Jakarta Sans", "Inter", sans-serif' }}>
         <div
           id="pdf-template"
           ref={pdfTemplateRef}
-          className="pdf-sheet absolute top-0 -left-[9999px] min-h-[1123px] w-[794px] px-8 py-6"
+          className="absolute top-0 -left-[9999px] min-h-[1123px] w-[794px] bg-[#ffffff] px-10 py-9 text-[#1e293b]"
         >
-          <header className="pdf-header">
+          <header className="mb-6 flex items-start justify-between gap-8 border-b-2 border-[#e2e8f0] pb-6">
             <div>
               {settings.logoDataUrl ? (
                 <img src={settings.logoDataUrl} alt="Logo" className="h-16 max-w-[180px] object-contain" />
               ) : (
-                <div className="pdf-logo-placeholder">LOGO</div>
+                <div className="flex h-16 w-28 items-center justify-center rounded-md border border-dashed border-[#cbd5e1] bg-[#f8fafc] text-xs font-semibold tracking-wide text-[#94a3b8]">
+                  LOGO
+                </div>
               )}
             </div>
             <div className="text-right">
-              <h2 className="text-lg font-semibold">{settings.companyName || "Votre entreprise"}</h2>
-              <p className="pdf-business-text mt-1 whitespace-pre-line">{settings.address || "Adresse"}</p>
-              <p className="pdf-business-text">Tél: {settings.phone || "-"}</p>
-              {settings.ice && <p className="pdf-business-text">ICE: {settings.ice}</p>}
+              <h2 className="text-3xl font-extrabold tracking-tight text-[#0f172a]">{settings.companyName || "Votre entreprise"}</h2>
+              <p className="mt-2 whitespace-pre-line text-sm text-[#475569]">{settings.address || "Adresse"}</p>
+              <p className="text-sm text-[#475569]">Tél: {settings.phone || "-"}</p>
+              {settings.ice && <p className="text-sm text-[#475569]">ICE: {settings.ice}</p>}
             </div>
           </header>
 
-          <section className="pdf-doc-head">
+          <section className="mb-6 flex items-start justify-between gap-6">
             <div>
-              <p className="pdf-doc-label">Document</p>
-              <p className="text-2xl font-semibold tracking-tight">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
+              <p className="text-sm font-medium text-[#64748b]">Document</p>
+              <p className="text-4xl font-black uppercase tracking-widest text-[#1e3a8a]">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
             </div>
-            <div className="pdf-meta-block">
+            <div className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-4 text-sm text-[#334155]">
               <p>Date: {today}</p>
               <p className="mt-1">Client: {clientName || "-"}</p>
               <p>Tél Client: {clientPhone || "-"}</p>
             </div>
           </section>
 
-          <table className="pdf-table table-fixed w-full">
+          <table className="w-full table-fixed border-collapse text-sm">
             <thead>
-              <tr className="pdf-table-head">
-                <th className="w-[55%]">Description</th>
-                <th className="w-[15%]">Qté</th>
-                <th className="w-[15%]">Prix Unitaire</th>
-                <th className="w-[15%]">Total</th>
+              <tr className="bg-[#1e293b] text-[#ffffff]">
+                <th className="w-[55%] p-4 text-left font-semibold">Description</th>
+                <th className="w-[15%] p-4 text-left font-semibold">Qté</th>
+                <th className="w-[15%] p-4 text-left font-semibold">Prix Unitaire</th>
+                <th className="w-[15%] p-4 text-left font-semibold">Total</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={`pdf-${item.id}`}>
-                  <td className="break-words whitespace-normal break-all">{item.description || "-"}</td>
-                  <td>{item.quantity}</td>
-                  <td>{formatCurrency(item.unitPrice)}</td>
-                  <td>{formatCurrency(item.quantity * item.unitPrice)}</td>
+                <tr key={`pdf-${item.id}`} className="border-b border-[#f1f5f9] text-[#334155]">
+                  <td className="break-all whitespace-normal p-4 break-words">{item.description || "-"}</td>
+                  <td className="p-4">{item.quantity}</td>
+                  <td className="p-4">{formatCurrency(item.unitPrice)}</td>
+                  <td className="p-4 font-semibold text-[#0f172a]">{formatCurrency(item.quantity * item.unitPrice)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          <div className="pdf-grand-total">
-            <span>Total Global</span>
+          <div className="ml-auto mt-6 flex w-fit min-w-[280px] items-center justify-between gap-6 rounded-xl bg-[#0f172a] p-4 text-[#ffffff]">
+            <span className="text-sm font-medium tracking-wide">Total Global</span>
             <strong>{formatCurrency(grandTotal)}</strong>
           </div>
 
-          <footer className="pdf-footer">Merci pour votre confiance.</footer>
+          <footer className="mt-12 border-t border-[#e2e8f0] pt-4 text-center text-xs text-[#64748b]">Merci pour votre confiance.</footer>
         </div>
       </div>
     </main>
