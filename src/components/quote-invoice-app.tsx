@@ -631,6 +631,13 @@ export function QuoteInvoiceApp() {
             <strong>{formatCurrency(grandTotal)}</strong>
           </div>
 
+          <div className="mt-10 flex justify-end">
+            <div className="w-[300px] text-right">
+              <p className="text-sm font-semibold text-[#334155]">Signature du client (Bon pour accord)</p>
+              <div className="mt-8 border-t border-[#cbd5e1]" />
+            </div>
+          </div>
+
           <footer className="mt-12 border-t border-[#e2e8f0] pt-4 text-center text-xs text-[#64748b]">Merci pour votre confiance.</footer>
         </div>
       </div>
