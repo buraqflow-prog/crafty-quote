@@ -80,6 +80,10 @@ const uiText = {
     clientNamePlaceholder: "Nom complet",
     clientPhoneLabel: "Téléphone du Client",
     clientPhonePlaceholder: "06XXXXXXXX",
+    clientAddressLabel: "Adresse du Client (Optionnel)",
+    clientAddressPlaceholder: "Adresse du client",
+    clientIceLabel: "ICE du Client (Optionnel)",
+    clientIcePlaceholder: "Numéro ICE du client",
     documentTypeLabel: "Type de document",
     quoteLabel: "Devis",
     invoiceLabel: "Facture",
@@ -132,6 +136,10 @@ const uiText = {
     clientNamePlaceholder: "الاسم الكامل",
     clientPhoneLabel: "هاتف الزبون",
     clientPhonePlaceholder: "06XXXXXXXX",
+    clientAddressLabel: "عنوان الزبون (اختياري)",
+    clientAddressPlaceholder: "عنوان الزبون",
+    clientIceLabel: "ICE الزبون (اختياري)",
+    clientIcePlaceholder: "رقم ICE للزبون",
     documentTypeLabel: "نوع المستند",
     quoteLabel: "عرض سعر",
     invoiceLabel: "فاتورة",
@@ -165,6 +173,8 @@ export function QuoteInvoiceApp() {
   const [docType, setDocType] = useState<DocumentType>("devis");
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
+  const [clientAddress, setClientAddress] = useState("");
+  const [clientIce, setClientIce] = useState("");
   const [items, setItems] = useState<InvoiceItem[]>([createItem()]);
   const [isVatEnabled, setIsVatEnabled] = useState(false);
   const [vatRate, setVatRate] = useState(20);
@@ -547,6 +557,12 @@ export function QuoteInvoiceApp() {
                   </Field>
                   <Field label={t.clientPhoneLabel}>
                     <Input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder={t.clientPhonePlaceholder} />
+                  </Field>
+                  <Field label={t.clientAddressLabel}>
+                    <Input value={clientAddress} onChange={(e) => setClientAddress(e.target.value)} placeholder={t.clientAddressPlaceholder} />
+                  </Field>
+                  <Field label={t.clientIceLabel}>
+                    <Input value={clientIce} onChange={(e) => setClientIce(e.target.value)} placeholder={t.clientIcePlaceholder} />
                   </Field>
                 </div>
 
