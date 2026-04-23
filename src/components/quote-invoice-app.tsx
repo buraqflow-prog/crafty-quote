@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Settings, Plus, Trash2, FileText, MessageCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,6 @@ const createItem = (): InvoiceItem => ({
 });
 
 export function QuoteInvoiceApp() {
-  const templateRef = useRef<HTMLDivElement>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<BusinessSettings>(() => {
     if (typeof window === "undefined") return emptySettings;
@@ -86,21 +85,8 @@ export function QuoteInvoiceApp() {
     reader.readAsDataURL(file);
   };
 
-  const generatePdf = async () => {
-    if (!templateRef.current) return;
-    const html2pdf = (await import("html2pdf.js")).default;
-    const filenameBase = `${docType}-${clientName || "client"}`.replace(/\s+/g, "-").toLowerCase();
-
-    await html2pdf()
-      .set({
-        margin: 10,
-        filename: `${filenameBase}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 3, useCORS: true },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      })
-      .from(templateRef.current)
-      .save();
+  const generatePdf = () => {
+    window.print();
   };
 
   const sendWhatsApp = () => {
@@ -128,7 +114,7 @@ export function QuoteInvoiceApp() {
 
   return (
     <main className="invoice-shell">
-      <section className="invoice-container">
+      <section className="invoice-container print:hidden">
         <header className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">Devis / Facture</h1>
@@ -330,8 +316,8 @@ export function QuoteInvoiceApp() {
         </div>
       </section>
 
-      <div className="absolute left-[-9999px] pointer-events-none opacity-0" aria-hidden="true">
-        <div ref={templateRef} className="pdf-sheet">
+      <div className="hidden print:block" aria-hidden="true">
+        <div className="pdf-sheet print:mx-auto print:min-h-0 print:w-full print:max-w-[210mm] print:px-8 print:py-6">
           <header className="pdf-header">
             <div>
               {settings.logoDataUrl ? (
