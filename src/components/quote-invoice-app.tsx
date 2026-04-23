@@ -677,22 +677,22 @@ export function QuoteInvoiceApp() {
             </div>
           </section>
 
-          <table className="w-full border-collapse border border-[#111111]">
+          <table className="w-full border-collapse border-2 border-[#000000]">
             <thead>
-              <tr className="bg-[#111111] text-xs font-bold uppercase tracking-wider text-[#ffffff]">
-                <th className="border border-[#111111] p-3 text-left">Description</th>
-                <th className="border border-[#111111] p-3 text-center">Prix</th>
-                <th className="border border-[#111111] p-3 text-center">Quantité</th>
-                <th className="border border-[#111111] p-3 text-center">Total</th>
+              <tr className="bg-[#f3f4f6] text-[#000000]">
+                <th className="border-2 border-[#000000] p-3 text-left text-xs font-extrabold uppercase tracking-wider text-[#000000]">Description</th>
+                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#000000]">Prix</th>
+                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#000000]">Quantité</th>
+                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#000000]">Total</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
                 <tr key={`pdf-${item.id}`} className="bg-transparent">
-                  <td className="break-all whitespace-normal border border-[#111111] p-3 text-sm font-medium text-[#111111] break-words">{item.description || "-"}</td>
-                  <td className="border border-[#111111] p-3 text-center text-sm font-medium text-[#111111]">{formatCurrency(item.unitPrice)}</td>
-                  <td className="border border-[#111111] p-3 text-center text-sm font-medium text-[#111111]">{item.quantity}</td>
-                  <td className="border border-[#111111] p-3 text-center text-sm font-medium text-[#111111]">{formatCurrency(item.quantity * item.unitPrice)}</td>
+                  <td className="break-all whitespace-normal border border-[#000000] p-3 text-sm font-medium text-[#000000] break-words">{item.description || "-"}</td>
+                  <td className="border border-[#000000] p-3 text-center text-sm font-medium text-[#000000]">{formatCurrency(item.unitPrice)}</td>
+                  <td className="border border-[#000000] p-3 text-center text-sm font-medium text-[#000000]">{item.quantity}</td>
+                  <td className="border border-[#000000] p-3 text-center text-sm font-medium text-[#000000]">{formatCurrency(item.quantity * item.unitPrice)}</td>
                 </tr>
               ))}
             </tbody>
