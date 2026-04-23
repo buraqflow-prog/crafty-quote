@@ -608,19 +608,19 @@ export function QuoteInvoiceApp() {
           <table className="w-full table-fixed border-collapse text-sm">
             <thead>
               <tr className="bg-[#1e293b] text-[#ffffff]">
-                <th className="w-[55%] p-4 text-left font-semibold">Description</th>
-                <th className="w-[15%] p-4 text-left font-semibold">Qté</th>
-                <th className="w-[15%] p-4 text-left font-semibold">Prix Unitaire</th>
-                <th className="w-[15%] p-4 text-left font-semibold">Total</th>
+                <th className="w-[55%] p-4 text-left font-extrabold text-[#0f172a]">Description</th>
+                <th className="w-[15%] p-4 text-left font-extrabold text-[#0f172a]">Qté</th>
+                <th className="w-[15%] p-4 text-left font-extrabold text-[#0f172a]">Prix Unitaire</th>
+                <th className="w-[15%] p-4 text-left font-extrabold text-[#0f172a]">Total</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={`pdf-${item.id}`} className="border-b border-[#f1f5f9] text-[#334155]">
-                  <td className="break-all whitespace-normal p-4 break-words">{item.description || "-"}</td>
-                  <td className="p-4">{item.quantity}</td>
-                  <td className="p-4">{formatCurrency(item.unitPrice)}</td>
-                  <td className="p-4 font-semibold text-[#0f172a]">{formatCurrency(item.quantity * item.unitPrice)}</td>
+                <tr key={`pdf-${item.id}`} className="border-b border-[#f1f5f9]">
+                  <td className="break-all whitespace-normal p-4 break-words font-bold text-[#1e293b]">{item.description || "-"}</td>
+                  <td className="p-4 font-bold text-[#1e293b]">{item.quantity}</td>
+                  <td className="p-4 font-bold text-[#1e293b]">{formatCurrency(item.unitPrice)}</td>
+                  <td className="p-4 font-bold text-[#1e293b]">{formatCurrency(item.quantity * item.unitPrice)}</td>
                 </tr>
               ))}
             </tbody>
