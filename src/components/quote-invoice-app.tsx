@@ -701,7 +701,7 @@ export function QuoteInvoiceApp() {
         <div
           id="pdf-template"
           ref={pdfTemplateRef}
-          className="absolute top-0 -left-[9999px] min-h-[1123px] w-[794px] bg-[#fcfbf9] px-10 py-9 text-[#111111]"
+          className="absolute top-0 -left-[9999px] min-h-[1123px] w-[794px] bg-[#ffffff] px-10 py-9 text-[#111111]"
         >
           <header className="flex items-start justify-between gap-8">
             <div>
@@ -749,22 +749,22 @@ export function QuoteInvoiceApp() {
             <p className="text-xs font-medium text-[#111111]">{items.length} ligne(s)</p>
           </div>
 
-          <table className="w-full border-collapse border-2 border-[#000000]">
+          <table className="w-full border-collapse border-[3px] border-[#000000]">
             <thead>
-              <tr className="bg-[#111111] text-[#ffffff]">
-                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#ffffff]">Description</th>
-                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#ffffff]">Prix</th>
-                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#ffffff]">Quantité</th>
-                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#ffffff]">Total</th>
+              <tr className="bg-[#000000] text-[#ffffff]">
+                <th className="border-2 border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">Description</th>
+                <th className="border-2 border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">Prix</th>
+                <th className="border-2 border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">Quantité</th>
+                <th className="border-2 border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">Total</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={`pdf-${item.id}`} className="bg-transparent">
-                  <td className="break-all whitespace-normal border border-[#000000] px-3 py-4 text-sm font-medium text-[#000000] break-words">{item.description || "-"}</td>
-                  <td className="border border-[#000000] px-3 py-4 text-center text-sm font-medium text-[#000000]">{formatCurrency(item.unitPrice)}</td>
-                  <td className="border border-[#000000] px-3 py-4 text-center text-sm font-medium text-[#000000]">{item.quantity}</td>
-                  <td className="border border-[#000000] px-3 py-4 text-center text-sm font-medium text-[#000000]">{formatCurrency(item.quantity * item.unitPrice)}</td>
+                <tr key={`pdf-${item.id}`} className="bg-[#ffffff]">
+                  <td className="break-all whitespace-normal border-2 border-[#000000] px-3 py-4 text-sm font-semibold text-[#000000] break-words">{item.description || "-"}</td>
+                  <td className="border-2 border-[#000000] px-3 py-4 text-center text-[15px] font-black text-[#000000]">{formatCurrency(item.unitPrice)}</td>
+                  <td className="border-2 border-[#000000] px-3 py-4 text-center text-sm font-bold text-[#000000]">{item.quantity}</td>
+                  <td className="border-2 border-[#000000] px-3 py-4 text-center text-[15px] font-black text-[#000000]">{formatCurrency(item.quantity * item.unitPrice)}</td>
                 </tr>
               ))}
             </tbody>
@@ -772,7 +772,7 @@ export function QuoteInvoiceApp() {
 
           <div className="mt-5 flex justify-end">
             {isVatEnabled ? (
-              <div className="w-80 border border-[#000000] bg-[#ffffff] p-3 text-right">
+               <div className="w-80 border-2 border-[#000000] bg-[#ffffff] p-3 text-right">
                 <div className="flex items-center justify-between text-[#111111]">
                   <span className="text-sm font-bold">Total HT</span>
                   <span className="text-sm font-bold">{formatCurrency(totalHT)}</span>
@@ -781,14 +781,14 @@ export function QuoteInvoiceApp() {
                   <span className="text-sm font-bold">TVA ({vatRate}%)</span>
                   <span className="text-sm font-bold">{formatCurrency(vatAmount)}</span>
                 </div>
-                <div className="mt-2 flex items-center justify-between bg-[#111111] p-3 text-[#ffffff]">
+                <div className="mt-2 flex items-center justify-between bg-[#000000] p-3 text-[#ffffff]">
                   <span className="text-sm font-black">Total TTC</span>
                   <strong className="text-lg font-black">{formatCurrency(totalTTC)}</strong>
                 </div>
               </div>
             ) : (
-              <div className="w-80 border border-[#000000] bg-[#ffffff] p-3">
-                <div className="flex items-center justify-between bg-[#111111] p-3 text-[#ffffff]">
+              <div className="w-80 border-2 border-[#000000] bg-[#ffffff] p-3">
+                <div className="flex items-center justify-between bg-[#000000] p-3 text-[#ffffff]">
                   <span className="text-sm font-black">Total Global</span>
                   <strong className="text-lg font-black">{formatCurrency(totalHT)}</strong>
                 </div>
