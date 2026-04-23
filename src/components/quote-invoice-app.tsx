@@ -62,6 +62,8 @@ const uiText = {
     phonePlaceholder: "06XXXXXXXX",
     iceLabel: "ICE (Optionnel)",
     icePlaceholder: "Numéro ICE",
+    invoiceNumberLabel: "N° Devis / Facture",
+    invoiceNumberPlaceholder: "12345",
     logoLabel: "Logo",
     removeLogo: "Retirer",
     save: "Enregistrer",
@@ -104,6 +106,8 @@ const uiText = {
     phonePlaceholder: "06XXXXXXXX",
     iceLabel: "ICE (اختياري)",
     icePlaceholder: "رقم ICE",
+    invoiceNumberLabel: "رقم عرض السعر / الفاتورة",
+    invoiceNumberPlaceholder: "12345",
     logoLabel: "الشعار",
     removeLogo: "حذف",
     save: "حفظ",
@@ -427,6 +431,14 @@ export function QuoteInvoiceApp() {
                     />
                   </Field>
 
+                  <Field label={t.invoiceNumberLabel}>
+                    <Input
+                      value={settingsDraft.invoiceNumber}
+                      onChange={(e) => setSettingsDraft((prev) => ({ ...prev, invoiceNumber: e.target.value }))}
+                      placeholder={t.invoiceNumberPlaceholder}
+                    />
+                  </Field>
+
                   <Field label={t.logoLabel}>
                     <Input
                       type="file"
@@ -582,7 +594,7 @@ export function QuoteInvoiceApp() {
               <p className="mb-4 text-6xl font-normal uppercase tracking-tight text-[#111111]">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
               <div className="flex gap-2">
                 <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">
-                  {docType === "devis" ? "Devis" : "Facture"} n°{String(Date.now()).slice(-5)}
+                  {docType === "devis" ? "Devis" : "Facture"} n°{settings.invoiceNumber || "12345"}
                 </span>
                 <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">{today}</span>
               </div>
