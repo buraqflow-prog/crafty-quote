@@ -191,6 +191,15 @@ export function QuoteInvoiceApp() {
     try {
       const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import("html2canvas"), import("jspdf")]);
 
+      const templateWidthPx = pdfTemplateRef.current.offsetWidth;
+      const templateHeightPx = pdfTemplateRef.current.offsetHeight;
+      const expectedA4HeightPx = templateWidthPx * (297 / 210);
+      const heightDelta = Math.abs(templateHeightPx - expectedA4HeightPx);
+
+      if (heightDelta > 8) {
+        throw new Error(`Template A4 invalide: hauteur attendue ${Math.round(expectedA4HeightPx)}px, actuelle ${Math.round(templateHeightPx)}px.`);
+      }
+
       if (document.fonts?.ready) {
         await document.fonts.ready;
       }
@@ -236,21 +245,40 @@ export function QuoteInvoiceApp() {
         },
       });
 
-      const imageData = canvas.toDataURL("image/jpeg", 0.98);
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-
-      const pageWidth = 210;
-      const pageHeight = 297;
+      const orientation = canvas.width > canvas.height ? "landscape" : "portrait";
+      const pdf = new jsPDF({ orientation, unit: "mm", format: "a4" });
+      const pageWidth = orientation === "portrait" ? 210 : 297;
+      const pageHeight = orientation === "portrait" ? 297 : 210;
       const margin = 10;
-      const maxWidth = pageWidth - margin * 2;
-      const maxHeight = pageHeight - margin * 2;
-      const imgProps = pdf.getImageProperties(imageData);
-      const ratio = Math.min(maxWidth / imgProps.width, maxHeight / imgProps.height);
-      const width = imgProps.width * ratio;
-      const height = imgProps.height * ratio;
-      const x = (pageWidth - width) / 2;
+      const printableWidth = pageWidth - margin * 2;
+      const printableHeight = pageHeight - margin * 2;
 
-      pdf.addImage(imageData, "JPEG", x, margin, width, height);
+      const canvasPageHeightPx = Math.floor((printableHeight * canvas.width) / printableWidth);
+      let renderedHeightPx = 0;
+      let pageIndex = 0;
+
+      while (renderedHeightPx < canvas.height) {
+        const sliceHeight = Math.min(canvasPageHeightPx, canvas.height - renderedHeightPx);
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sliceHeight;
+
+        const pageContext = pageCanvas.getContext("2d");
+        if (!pageContext) throw new Error("Impossible de créer le contexte canvas pour la pagination.");
+
+        pageContext.drawImage(canvas, 0, renderedHeightPx, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+
+        const imageData = pageCanvas.toDataURL("image/jpeg", 0.98);
+        const imageHeightMm = (sliceHeight * printableWidth) / canvas.width;
+
+        if (pageIndex > 0) {
+          pdf.addPage("a4", orientation);
+        }
+
+        pdf.addImage(imageData, "JPEG", margin, margin, printableWidth, imageHeightMm);
+        renderedHeightPx += sliceHeight;
+        pageIndex += 1;
+      }
 
       const safeClient = clientName.trim().replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\-]/g, "") || "client";
       const fileName = `${docType}_${safeClient}_${Date.now()}.pdf`;
