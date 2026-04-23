@@ -93,6 +93,11 @@ const uiText = {
     unitPriceLabel: "Prix Unitaire",
     subtotalLabel: "Sous-total",
     totalGlobalLabel: "Total Global",
+    applyVatLabel: "Appliquer la TVA",
+    vatRateLabel: "Taux TVA (%)",
+    totalHtLabel: "Total HT",
+    vatAmountLabel: "Montant TVA",
+    totalTtcLabel: "Total TTC",
     generatePdfLabel: "Générer le PDF",
     generatingPdfLabel: "Génération en cours...",
     sendWhatsAppLabel: "Envoyer par WhatsApp",
@@ -140,6 +145,11 @@ const uiText = {
     unitPriceLabel: "سعر الوحدة",
     subtotalLabel: "المجموع الفرعي",
     totalGlobalLabel: "المجموع الإجمالي",
+    applyVatLabel: "تطبيق الضريبة",
+    vatRateLabel: "نسبة الضريبة (%)",
+    totalHtLabel: "المجموع قبل الضريبة",
+    vatAmountLabel: "قيمة الضريبة",
+    totalTtcLabel: "المجموع مع الضريبة",
     generatePdfLabel: "إنشاء الفاتورة",
     generatingPdfLabel: "جاري الإنشاء...",
     sendWhatsAppLabel: "إرسال عبر واتساب",
@@ -156,6 +166,8 @@ export function QuoteInvoiceApp() {
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [items, setItems] = useState<InvoiceItem[]>([createItem()]);
+  const [isVatEnabled, setIsVatEnabled] = useState(false);
+  const [vatRate, setVatRate] = useState(20);
   const [isExporting, setIsExporting] = useState(false);
   const pdfTemplateRef = useRef<HTMLDivElement>(null);
   const isArabic = language === "ar";
@@ -178,10 +190,12 @@ export function QuoteInvoiceApp() {
   const today = new Date().toLocaleDateString("fr-FR");
   const formattedInvoiceNumber = `${settings.invoicePrefix || "FAC-"}${settings.invoiceSequence || "00012"}`;
 
-  const grandTotal = useMemo(
+  const totalHT = useMemo(
     () => items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0),
     [items],
   );
+  const vatAmount = useMemo(() => (isVatEnabled ? totalHT * (vatRate / 100) : 0), [isVatEnabled, totalHT, vatRate]);
+  const totalTTC = useMemo(() => totalHT + vatAmount, [totalHT, vatAmount]);
 
   const saveSettings = () => {
     setSettings(settingsDraft);
@@ -372,7 +386,9 @@ export function QuoteInvoiceApp() {
       `Client: ${clientName || "-"}`,
       `Téléphone client: ${clientPhone || "-"}`,
       lines,
-      `Total: ${formatCurrency(grandTotal)}`,
+      `Total HT: ${formatCurrency(totalHT)}`,
+      ...(isVatEnabled ? [`TVA (${vatRate}%): ${formatCurrency(vatAmount)}`] : []),
+      `Total: ${formatCurrency(totalTTC)}`,
     ]
       .filter(Boolean)
       .join("\n");
@@ -617,8 +633,42 @@ export function QuoteInvoiceApp() {
           </div>
 
           <div className="invoice-total-card">
-            <span className="text-sm text-muted-foreground">{t.totalGlobalLabel}</span>
-            <strong className="text-2xl font-semibold text-foreground">{formatCurrency(grandTotal)}</strong>
+            <div className="w-full space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{t.totalHtLabel}</span>
+                <strong className="text-lg font-semibold text-foreground">{formatCurrency(totalHT)}</strong>
+              </div>
+              {isVatEnabled && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{t.vatAmountLabel} ({vatRate}%)</span>
+                  <strong className="text-lg font-semibold text-foreground">{formatCurrency(vatAmount)}</strong>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{isVatEnabled ? t.totalTtcLabel : t.totalGlobalLabel}</span>
+                <strong className="text-2xl font-semibold text-foreground">{formatCurrency(totalTTC)}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="invoice-card">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+                <span className="text-sm font-medium text-foreground">{t.applyVatLabel}</span>
+                <Switch checked={isVatEnabled} onCheckedChange={setIsVatEnabled} />
+              </div>
+              {isVatEnabled && (
+                <Field label={t.vatRateLabel}>
+                  <Input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={vatRate}
+                    onChange={(e) => setVatRate(Math.max(0, Number(e.target.value) || 0))}
+                  />
+                </Field>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-3 print:hidden sm:grid-cols-2">
@@ -700,10 +750,27 @@ export function QuoteInvoiceApp() {
           </table>
 
           <div className="mt-4 flex justify-end">
-            <div className="flex w-64 items-end justify-between border-2 border-[#000000] bg-[#f7f7f4] p-3 uppercase text-[#000000]">
-              <span className="text-xs font-extrabold tracking-wider">Grand Total</span>
-              <strong className="text-lg font-extrabold">{formatCurrency(grandTotal)}</strong>
-            </div>
+            {isVatEnabled ? (
+              <div className="w-72 text-right">
+                <div className="flex items-center justify-between text-[#111111]">
+                  <span className="text-sm font-bold">Total HT</span>
+                  <span className="text-sm font-bold">{formatCurrency(totalHT)}</span>
+                </div>
+                <div className="mt-1 flex items-center justify-between text-[#111111]">
+                  <span className="text-sm font-bold">TVA ({vatRate}%)</span>
+                  <span className="text-sm font-bold">{formatCurrency(vatAmount)}</span>
+                </div>
+                <div className="mt-2 flex items-center justify-between bg-[#111111] p-3 text-[#ffffff]">
+                  <span className="text-sm font-black">Total TTC</span>
+                  <strong className="text-lg font-black">{formatCurrency(totalTTC)}</strong>
+                </div>
+              </div>
+            ) : (
+              <div className="flex w-72 items-center justify-between bg-[#111111] p-3 text-[#ffffff]">
+                <span className="text-sm font-black">Total Global</span>
+                <strong className="text-lg font-black">{formatCurrency(totalHT)}</strong>
+              </div>
+            )}
           </div>
 
           <footer className="mt-10">
