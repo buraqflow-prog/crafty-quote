@@ -757,6 +757,8 @@ export function QuoteInvoiceApp() {
               <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">Client</p>
               <p className="mt-2 text-sm font-bold uppercase text-[#111111]">{clientName || "-"}</p>
               <p className="mt-1 text-sm text-[#111111]">{clientPhone || "-"}</p>
+              {clientAddress.trim() && <p className="mt-1 text-sm leading-relaxed text-[#111111]">{clientAddress}</p>}
+              {clientIce.trim() && <p className="mt-1 text-sm text-[#111111]">ICE : {clientIce}</p>}
             </div>
           </section>
 
