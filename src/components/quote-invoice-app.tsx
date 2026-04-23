@@ -342,9 +342,9 @@ export function QuoteInvoiceApp() {
             </div>
             <div className="text-right">
               <h2 className="text-lg font-semibold">{settings.companyName || "Votre entreprise"}</h2>
-              <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{settings.address || "Adresse"}</p>
-              <p className="text-sm text-slate-600">Tél: {settings.phone || "-"}</p>
-              {settings.ice && <p className="text-sm text-slate-600">ICE: {settings.ice}</p>}
+              <p className="pdf-business-text mt-1 whitespace-pre-line">{settings.address || "Adresse"}</p>
+              <p className="pdf-business-text">Tél: {settings.phone || "-"}</p>
+              {settings.ice && <p className="pdf-business-text">ICE: {settings.ice}</p>}
             </div>
           </header>
 
@@ -353,7 +353,7 @@ export function QuoteInvoiceApp() {
               <p className="text-xs uppercase tracking-wide text-slate-500">Document</p>
               <p className="text-2xl font-semibold tracking-tight">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
             </div>
-            <div className="text-right text-sm text-slate-600">
+            <div className="pdf-meta-block">
               <p>Date: {today}</p>
               <p className="mt-1">Client: {clientName || "-"}</p>
               <p>Tél Client: {clientPhone || "-"}</p>
