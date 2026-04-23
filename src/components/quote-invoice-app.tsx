@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
 type DocumentType = "devis" | "facture";
@@ -17,6 +18,7 @@ type BusinessSettings = {
   ice: string;
   invoicePrefix: string;
   invoiceSequence: string;
+  autoIncrementInvoiceNumber: boolean;
   logoDataUrl: string;
 };
 
@@ -36,6 +38,7 @@ const emptySettings: BusinessSettings = {
   ice: "",
   invoicePrefix: "",
   invoiceSequence: "",
+  autoIncrementInvoiceNumber: false,
   logoDataUrl: "",
 };
 
@@ -68,6 +71,7 @@ const uiText = {
     invoicePrefixPlaceholder: "FAC-",
     invoiceSequenceLabel: "Numérotation",
     invoiceSequencePlaceholder: "00012",
+    autoIncrementInvoiceNumberLabel: "Incrémenter automatiquement au clic sur Générer le PDF",
     logoLabel: "Logo",
     removeLogo: "Retirer",
     save: "Enregistrer",
@@ -114,6 +118,7 @@ const uiText = {
     invoicePrefixPlaceholder: "FAC-",
     invoiceSequenceLabel: "الترقيم",
     invoiceSequencePlaceholder: "00012",
+    autoIncrementInvoiceNumberLabel: "زيادة الترقيم تلقائيًا عند الضغط على إنشاء الفاتورة",
     logoLabel: "الشعار",
     removeLogo: "حذف",
     save: "حفظ",
@@ -182,6 +187,18 @@ export function QuoteInvoiceApp() {
     setSettings(settingsDraft);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settingsDraft));
     setIsSettingsOpen(false);
+  };
+
+  const incrementInvoiceNumber = () => {
+    setSettings((prev) => {
+      const next = {
+        ...prev,
+        invoiceSequence: incrementSequence(prev.invoiceSequence || "00012"),
+      };
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      setSettingsDraft(next);
+      return next;
+    });
   };
 
   const updateItem = (id: string, patch: Partial<InvoiceItem>) => {
@@ -333,6 +350,9 @@ export function QuoteInvoiceApp() {
       toast.error(message);
       window.alert(message);
     } finally {
+      if (settings.autoIncrementInvoiceNumber) {
+        incrementInvoiceNumber();
+      }
       setIsExporting(false);
     }
   };
@@ -452,6 +472,21 @@ export function QuoteInvoiceApp() {
                       onChange={(e) => setSettingsDraft((prev) => ({ ...prev, invoiceSequence: e.target.value }))}
                       placeholder={t.invoiceSequencePlaceholder}
                     />
+                  </Field>
+
+                  <Field label={t.autoIncrementInvoiceNumberLabel}>
+                    <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+                      <span className="text-sm text-foreground">{settingsDraft.autoIncrementInvoiceNumber ? "ON" : "OFF"}</span>
+                      <Switch
+                        checked={settingsDraft.autoIncrementInvoiceNumber}
+                        onCheckedChange={(checked) =>
+                          setSettingsDraft((prev) => ({
+                            ...prev,
+                            autoIncrementInvoiceNumber: checked,
+                          }))
+                        }
+                      />
+                    </div>
                   </Field>
 
                   <Field label={t.logoLabel}>
@@ -687,6 +722,15 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       {children}
     </div>
   );
+}
+
+function incrementSequence(value: string) {
+  const match = value.match(/^(.*?)(\d+)$/);
+  if (!match) return "00001";
+
+  const [, prefix, digits] = match;
+  const nextNumber = String(Number.parseInt(digits, 10) + 1).padStart(digits.length, "0");
+  return `${prefix}${nextNumber}`;
 }
 
 function formatCurrency(amount: number) {
