@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Settings, Plus, Trash2, FileText, MessageCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -42,22 +42,27 @@ const createItem = (): InvoiceItem => ({
 
 export function QuoteInvoiceApp() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [settings, setSettings] = useState<BusinessSettings>(() => {
-    if (typeof window === "undefined") return emptySettings;
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return emptySettings;
-    try {
-      return { ...emptySettings, ...(JSON.parse(raw) as Partial<BusinessSettings>) };
-    } catch {
-      return emptySettings;
-    }
-  });
+  const [settings, setSettings] = useState<BusinessSettings>(emptySettings);
   const [settingsDraft, setSettingsDraft] = useState<BusinessSettings>(settings);
 
   const [docType, setDocType] = useState<DocumentType>("devis");
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [items, setItems] = useState<InvoiceItem[]>([createItem()]);
+
+  useEffect(() => {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+
+    try {
+      const stored = { ...emptySettings, ...(JSON.parse(raw) as Partial<BusinessSettings>) };
+      setSettings(stored);
+      setSettingsDraft(stored);
+    } catch {
+      setSettings(emptySettings);
+      setSettingsDraft(emptySettings);
+    }
+  }, []);
 
   const today = new Date().toLocaleDateString("fr-FR");
 
@@ -305,7 +310,7 @@ export function QuoteInvoiceApp() {
             <strong className="text-2xl font-semibold text-foreground">{formatCurrency(grandTotal)}</strong>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 print:hidden sm:grid-cols-2">
             <Button type="button" className="h-11" onClick={generatePdf}>
               <FileText /> Générer le PDF
             </Button>
