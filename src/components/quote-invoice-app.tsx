@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -239,25 +240,39 @@ export function QuoteInvoiceApp() {
       const pdfBlob = pdf.output("blob");
       const pdfFile = new File([pdfBlob], fileName, { type: "application/pdf" });
 
+      const downloadPdf = () => {
+        const url = URL.createObjectURL(pdfBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      };
+
       if (navigator.canShare?.({ files: [pdfFile] }) && navigator.share) {
-        await navigator.share({
-          files: [pdfFile],
-          title: docType === "devis" ? "DEVIS" : "FACTURE",
-          text: "Document PDF",
-        });
-        return;
+        try {
+          await navigator.share({
+            files: [pdfFile],
+            title: docType === "devis" ? "DEVIS" : "FACTURE",
+            text: "Document PDF",
+          });
+          toast.success("PDF prêt à être partagé");
+          return;
+        } catch {
+          downloadPdf();
+          toast("Partage indisponible, téléchargement lancé.");
+          return;
+        }
       }
 
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
+      downloadPdf();
+      toast.success("PDF téléchargé");
     } catch (error) {
-      console.error("PDF export failed", error);
+      const message = error instanceof Error ? error.message : "Erreur inconnue pendant la génération du PDF.";
+      toast.error(message);
+      window.alert(message);
     } finally {
       setIsExporting(false);
     }
@@ -508,8 +523,12 @@ export function QuoteInvoiceApp() {
         </div>
       </section>
 
-      <div className="pointer-events-none fixed -left-[9999px] top-0 w-[794px] bg-white" aria-hidden="true" dir="ltr" style={{ fontFamily: '"Inter", sans-serif' }}>
-        <div id="pdf-template" ref={pdfTemplateRef} className="pdf-sheet min-h-[1123px] w-[794px] px-8 py-6">
+      <div aria-hidden="true" dir="ltr" style={{ fontFamily: '"Inter", sans-serif' }}>
+        <div
+          id="pdf-template"
+          ref={pdfTemplateRef}
+          className="pdf-sheet absolute top-0 -left-[9999px] min-h-[1123px] w-[794px] bg-white px-8 py-6"
+        >
           <header className="pdf-header">
             <div>
               {settings.logoDataUrl ? (
