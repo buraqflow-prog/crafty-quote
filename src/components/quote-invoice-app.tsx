@@ -544,7 +544,7 @@ export function QuoteInvoiceApp() {
         <div
           id="pdf-template"
           ref={pdfTemplateRef}
-          className="pdf-sheet absolute top-0 -left-[9999px] min-h-[1123px] w-[794px] bg-white px-8 py-6"
+          className="pdf-sheet absolute top-0 -left-[9999px] min-h-[1123px] w-[794px] px-8 py-6"
         >
           <header className="pdf-header">
             <div>
