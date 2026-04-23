@@ -602,7 +602,6 @@ export function QuoteInvoiceApp() {
           </section>
 
           <div className="my-8 w-full text-center">
-            <p className="mb-2 text-sm uppercase tracking-widest text-[#64748b]">Document</p>
             <p className="text-5xl font-black uppercase tracking-[0.25em] text-[#000000]">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
           </div>
 
