@@ -573,71 +573,78 @@ export function QuoteInvoiceApp() {
         <div
           id="pdf-template"
           ref={pdfTemplateRef}
-          className="absolute top-0 -left-[9999px] min-h-[1123px] w-[794px] bg-[#ffffff] px-10 py-9 text-[#1e293b]"
+          className="absolute top-0 -left-[9999px] min-h-[1123px] w-[794px] bg-[#fcfbf9] px-10 py-9 text-[#111111]"
         >
-          <header className="mb-6 flex items-start justify-between gap-8 border-b-2 border-[#e2e8f0] pb-6">
+          <header className="flex items-start justify-between gap-8">
             <div>
+              <p className="mb-4 text-6xl font-normal uppercase tracking-tight text-[#111111]">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
+              <div className="flex gap-2">
+                <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">
+                  {docType === "devis" ? "Devis" : "Facture"} n°{String(Date.now()).slice(-5)}
+                </span>
+                <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">{today}</span>
+              </div>
+            </div>
+
+            <div className="flex min-h-16 min-w-28 items-start justify-end">
               {settings.logoDataUrl ? (
                 <img src={settings.logoDataUrl} alt="Logo" className="h-16 max-w-[180px] object-contain" />
               ) : (
-                <div className="flex h-16 w-28 items-center justify-center rounded-md border border-dashed border-[#cbd5e1] bg-[#f8fafc] text-xs font-semibold tracking-wide text-[#94a3b8]">
+                <div className="flex h-16 w-28 items-center justify-center rounded-full border border-[#111111] text-xs font-medium text-[#111111]">
                   LOGO
                 </div>
               )}
             </div>
-            <div className="text-right">
-              <h2 className="text-3xl font-extrabold tracking-tight text-[#0f172a]">{settings.companyName || "Votre entreprise"}</h2>
-              <p className="mt-2 whitespace-pre-line text-sm text-[#475569]">{settings.address || "Adresse"}</p>
-              <p className="text-sm text-[#475569]">Tél: {settings.phone || "-"}</p>
-              {settings.ice && <p className="text-sm text-[#475569]">ICE: {settings.ice}</p>}
-            </div>
           </header>
 
-          <section className="mb-2 flex items-start justify-end gap-6">
-            <div className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-4 text-sm text-[#334155]">
-              <p>Date: {today}</p>
-              <p className="mt-1">Client: {clientName || "-"}</p>
-              <p>Tél Client: {clientPhone || "-"}</p>
+          <hr className="my-8 border-t border-[#111111]" />
+
+          <section className="mb-8 flex items-start justify-between gap-8">
+            <div>
+              <p className="text-sm font-bold uppercase text-[#111111]">{settings.companyName || "Votre entreprise"}</p>
+              <p className="mt-1 whitespace-pre-line text-sm text-[#111111]">{settings.address || "Adresse"}</p>
+              <p className="text-sm text-[#111111]">{settings.phone || "-"}</p>
+            </div>
+
+            <div className="text-right">
+              <p className="text-sm font-bold uppercase text-[#111111]">À L&apos;ATTENTION DE</p>
+              <p className="mt-1 text-sm font-bold text-[#111111]">{clientName || "-"}</p>
+              <p className="text-sm text-[#111111]">{clientPhone || "-"}</p>
             </div>
           </section>
 
-          <div className="my-8 w-full text-center">
-            <p className="text-5xl font-black uppercase tracking-[0.25em] text-[#000000]">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
-          </div>
-
-          <table className="w-full table-fixed border-collapse border-2 border-[#000000] text-sm">
-            <colgroup>
-              <col style={{ width: "390px" }} />
-              <col style={{ width: "108px" }} />
-              <col style={{ width: "108px" }} />
-              <col style={{ width: "108px" }} />
-            </colgroup>
+          <table className="w-full border-collapse border border-[#111111]">
             <thead>
-              <tr>
-                <th className="border-2 border-[#000000] bg-[#f8fafc] p-3 text-left font-black uppercase text-[#000000]">Description</th>
-                <th className="border-2 border-[#000000] bg-[#f8fafc] p-3 text-left font-black uppercase text-[#000000]">Qté</th>
-                <th className="border-2 border-[#000000] bg-[#f8fafc] p-3 text-left font-black uppercase text-[#000000]">Prix Unitaire</th>
-                <th className="border-2 border-[#000000] bg-[#f8fafc] p-3 text-left font-black uppercase text-[#000000]">Total</th>
+              <tr className="bg-[#111111] text-xs font-bold uppercase tracking-wider text-[#ffffff]">
+                <th className="border border-[#111111] p-3 text-left">Description</th>
+                <th className="border border-[#111111] p-3 text-center">Prix</th>
+                <th className="border border-[#111111] p-3 text-center">Quantité</th>
+                <th className="border border-[#111111] p-3 text-center">Total</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={`pdf-${item.id}`}>
-                  <td className="break-all whitespace-normal border-2 border-[#000000] p-3 break-words font-black text-[#000000]">{item.description || "-"}</td>
-                  <td className="border-2 border-[#000000] p-3 font-black text-[#000000]">{item.quantity}</td>
-                  <td className="border-2 border-[#000000] p-3 font-black text-[#000000]">{formatCurrency(item.unitPrice)}</td>
-                  <td className="border-2 border-[#000000] p-3 font-black text-[#000000]">{formatCurrency(item.quantity * item.unitPrice)}</td>
+                <tr key={`pdf-${item.id}`} className="bg-transparent">
+                  <td className="break-all whitespace-normal border border-[#111111] p-3 text-sm font-medium text-[#111111] break-words">{item.description || "-"}</td>
+                  <td className="border border-[#111111] p-3 text-center text-sm font-medium text-[#111111]">{formatCurrency(item.unitPrice)}</td>
+                  <td className="border border-[#111111] p-3 text-center text-sm font-medium text-[#111111]">{item.quantity}</td>
+                  <td className="border border-[#111111] p-3 text-center text-sm font-medium text-[#111111]">{formatCurrency(item.quantity * item.unitPrice)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          <div className="ml-auto mt-6 flex w-fit min-w-[280px] items-center justify-between gap-6 rounded-xl bg-[#0f172a] p-4 text-[#ffffff]">
-            <span className="text-sm font-medium tracking-wide">Total Global</span>
-            <strong>{formatCurrency(grandTotal)}</strong>
+          <div className="mt-4 flex justify-end">
+            <div className="flex w-64 justify-between bg-[#111111] p-3 font-bold uppercase text-[#ffffff]">
+              <span>Total</span>
+              <strong>{formatCurrency(grandTotal)}</strong>
+            </div>
           </div>
 
-          <footer className="mt-12 border-t border-[#e2e8f0] pt-4 text-center text-xs text-[#64748b]">Merci pour votre confiance.</footer>
+          <footer className="mt-10">
+            <hr className="mb-2 border-t border-[#111111]" />
+            <p className="text-xs font-bold text-[#111111]">Merci pour votre confiance</p>
+          </footer>
         </div>
       </div>
     </main>
