@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Settings, Plus, Trash2, FileText, MessageCircle } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -81,6 +81,7 @@ const uiText = {
     subtotalLabel: "Sous-total",
     totalGlobalLabel: "Total Global",
     generatePdfLabel: "Générer le PDF",
+    generatingPdfLabel: "Génération en cours...",
     sendWhatsAppLabel: "Envoyer par WhatsApp",
   },
   ar: {
@@ -122,6 +123,7 @@ const uiText = {
     subtotalLabel: "المجموع الفرعي",
     totalGlobalLabel: "المجموع الإجمالي",
     generatePdfLabel: "إنشاء الفاتورة",
+    generatingPdfLabel: "جاري الإنشاء...",
     sendWhatsAppLabel: "إرسال عبر واتساب",
   },
 } as const;
@@ -136,6 +138,8 @@ export function QuoteInvoiceApp() {
   const [clientName, setClientName] = useState("");
   const [clientPhone, setClientPhone] = useState("");
   const [items, setItems] = useState<InvoiceItem[]>([createItem()]);
+  const [isExporting, setIsExporting] = useState(false);
+  const pdfTemplateRef = useRef<HTMLDivElement>(null);
   const isArabic = language === "ar";
   const t = uiText[language];
 
@@ -179,8 +183,64 @@ export function QuoteInvoiceApp() {
     reader.readAsDataURL(file);
   };
 
-  const generatePdf = () => {
-    window.print();
+  const generatePdf = async () => {
+    if (isExporting || !pdfTemplateRef.current) return;
+
+    setIsExporting(true);
+    try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import("html2canvas"), import("jspdf")]);
+
+      if (document.fonts?.ready) {
+        await document.fonts.ready;
+      }
+
+      const canvas = await html2canvas(pdfTemplateRef.current, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
+
+      const imageData = canvas.toDataURL("image/jpeg", 0.98);
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const margin = 10;
+      const maxWidth = pageWidth - margin * 2;
+      const maxHeight = pageHeight - margin * 2;
+      const imgProps = pdf.getImageProperties(imageData);
+      const ratio = Math.min(maxWidth / imgProps.width, maxHeight / imgProps.height);
+      const width = imgProps.width * ratio;
+      const height = imgProps.height * ratio;
+      const x = (pageWidth - width) / 2;
+
+      pdf.addImage(imageData, "JPEG", x, margin, width, height);
+
+      const safeClient = clientName.trim().replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\-]/g, "") || "client";
+      const fileName = `${docType}_${safeClient}_${Date.now()}.pdf`;
+      const pdfBlob = pdf.output("blob");
+      const pdfFile = new File([pdfBlob], fileName, { type: "application/pdf" });
+
+      if (navigator.canShare?.({ files: [pdfFile] }) && navigator.share) {
+        await navigator.share({
+          files: [pdfFile],
+          title: docType === "devis" ? "DEVIS" : "FACTURE",
+          text: "Document PDF",
+        });
+        return;
+      }
+
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const sendWhatsApp = () => {
@@ -417,8 +477,9 @@ export function QuoteInvoiceApp() {
           </div>
 
           <div className="grid grid-cols-1 gap-3 print:hidden sm:grid-cols-2">
-            <Button type="button" className="h-11" onClick={generatePdf}>
-              <FileText /> {t.generatePdfLabel}
+            <Button type="button" className="h-11" onClick={generatePdf} disabled={isExporting}>
+              {isExporting ? <LoaderCircle className="animate-spin" /> : <FileText />}
+              {isExporting ? t.generatingPdfLabel : t.generatePdfLabel}
             </Button>
             <Button type="button" variant="secondary" className="h-11" onClick={sendWhatsApp}>
               <MessageCircle /> {t.sendWhatsAppLabel}
@@ -427,8 +488,8 @@ export function QuoteInvoiceApp() {
         </div>
       </section>
 
-      <div className="hidden print:block" aria-hidden="true" dir="ltr" style={{ fontFamily: '"Inter", sans-serif' }}>
-        <div className="pdf-sheet print:mx-auto print:min-h-0 print:w-full print:max-w-[210mm] print:px-8 print:py-6">
+      <div className="pointer-events-none fixed -left-[9999px] top-0 w-[794px] bg-white" aria-hidden="true" dir="ltr" style={{ fontFamily: '"Inter", sans-serif' }}>
+        <div ref={pdfTemplateRef} className="pdf-sheet min-h-[1123px] w-[794px] px-8 py-6">
           <header className="pdf-header">
             <div>
               {settings.logoDataUrl ? (
