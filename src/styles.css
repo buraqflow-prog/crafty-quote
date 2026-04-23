@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -59,6 +60,9 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-surface-soft: var(--surface-soft);
 }
 
 :root {
@@ -95,6 +99,9 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+  --brand: oklch(0.53 0.16 256);
+  --brand-foreground: oklch(0.98 0.01 260);
+  --surface-soft: oklch(0.97 0.005 255);
 }
 
 .dark {
@@ -130,6 +137,9 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  --brand: oklch(0.66 0.16 256);
+  --brand-foreground: oklch(0.15 0.03 260);
+  --surface-soft: oklch(0.24 0.015 255);
 }
 
 @layer base {
@@ -140,5 +150,77 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: "Inter", system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .invoice-shell {
+    @apply min-h-screen bg-background px-4 py-5;
+  }
+
+  .invoice-container {
+    @apply mx-auto w-full max-w-xl;
+  }
+
+  .invoice-card {
+    @apply rounded-lg border border-border bg-card p-4 shadow-sm;
+  }
+
+  .invoice-section-title {
+    @apply text-base font-semibold text-foreground;
+  }
+
+  .invoice-item-card {
+    @apply rounded-md border border-border bg-background p-3;
+  }
+
+  .invoice-line-total {
+    @apply mt-2 text-right text-sm font-medium text-foreground;
+  }
+
+  .invoice-total-card {
+    @apply rounded-lg border border-border bg-card p-4 text-right shadow-sm;
+  }
+
+  .pdf-sheet {
+    @apply w-[794px] min-h-[1123px] bg-white px-10 py-9 text-slate-800;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+
+  .pdf-header {
+    @apply flex items-start justify-between gap-8 border-b border-slate-200 pb-5;
+  }
+
+  .pdf-logo-placeholder {
+    @apply flex h-16 w-28 items-center justify-center rounded border border-dashed border-slate-300 text-xs text-slate-400;
+  }
+
+  .pdf-doc-head {
+    @apply mt-6 flex items-start justify-between;
+  }
+
+  .pdf-table {
+    @apply mt-6 w-full border-collapse text-sm;
+  }
+
+  .pdf-table-head {
+    background-color: var(--color-surface-soft);
+  }
+
+  .pdf-table th {
+    @apply border border-slate-200 px-4 py-3 text-left font-semibold;
+  }
+
+  .pdf-table td {
+    @apply border border-slate-200 px-4 py-3 align-top;
+  }
+
+  .pdf-grand-total {
+    @apply ml-auto mt-6 flex w-64 items-center justify-between rounded-md bg-slate-900 px-4 py-3 text-white;
+  }
+
+  .pdf-footer {
+    @apply mt-12 border-t border-slate-200 pt-4 text-center text-sm text-slate-500;
   }
 }
