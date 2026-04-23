@@ -689,10 +689,10 @@ export function QuoteInvoiceApp() {
             <tbody>
               {items.map((item) => (
                 <tr key={`pdf-${item.id}`} className="bg-transparent">
-                  <td className="break-all whitespace-normal border border-[#000000] p-3 text-sm font-medium text-[#000000] break-words">{item.description || "-"}</td>
-                  <td className="border border-[#000000] p-3 text-center text-sm font-medium text-[#000000]">{formatCurrency(item.unitPrice)}</td>
-                  <td className="border border-[#000000] p-3 text-center text-sm font-medium text-[#000000]">{item.quantity}</td>
-                  <td className="border border-[#000000] p-3 text-center text-sm font-medium text-[#000000]">{formatCurrency(item.quantity * item.unitPrice)}</td>
+                  <td className="break-all whitespace-normal border border-[#000000] px-3 py-4 text-sm font-medium text-[#000000] break-words">{item.description || "-"}</td>
+                  <td className="border border-[#000000] px-3 py-4 text-center text-sm font-medium text-[#000000]">{formatCurrency(item.unitPrice)}</td>
+                  <td className="border border-[#000000] px-3 py-4 text-center text-sm font-medium text-[#000000]">{item.quantity}</td>
+                  <td className="border border-[#000000] px-3 py-4 text-center text-sm font-medium text-[#000000]">{formatCurrency(item.quantity * item.unitPrice)}</td>
                 </tr>
               ))}
             </tbody>
