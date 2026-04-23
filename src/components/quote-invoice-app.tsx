@@ -350,7 +350,7 @@ export function QuoteInvoiceApp() {
 
           <section className="pdf-doc-head">
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-500">Document</p>
+              <p className="pdf-doc-label">Document</p>
               <p className="text-2xl font-semibold tracking-tight">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
             </div>
             <div className="pdf-meta-block">
