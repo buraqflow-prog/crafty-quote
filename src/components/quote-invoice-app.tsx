@@ -593,17 +593,18 @@ export function QuoteInvoiceApp() {
             </div>
           </header>
 
-          <section className="mb-6 flex items-start justify-between gap-6">
-            <div>
-              <p className="text-sm font-medium text-[#64748b]">Document</p>
-              <p className="text-4xl font-black uppercase tracking-widest text-[#1e3a8a]">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
-            </div>
+          <section className="mb-2 flex items-start justify-end gap-6">
             <div className="rounded-lg border border-[#e2e8f0] bg-[#f8fafc] p-4 text-sm text-[#334155]">
               <p>Date: {today}</p>
               <p className="mt-1">Client: {clientName || "-"}</p>
               <p>Tél Client: {clientPhone || "-"}</p>
             </div>
           </section>
+
+          <div className="my-8 w-full text-center">
+            <p className="mb-2 text-sm uppercase tracking-widest text-[#64748b]">Document</p>
+            <p className="text-5xl font-black uppercase tracking-[0.25em] text-[#000000]">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
+          </div>
 
           <table className="w-full table-fixed border-collapse border-2 border-[#000000] text-sm">
             <thead>
