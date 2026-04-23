@@ -15,7 +15,8 @@ type BusinessSettings = {
   address: string;
   phone: string;
   ice: string;
-  invoiceNumber: string;
+  invoicePrefix: string;
+  invoiceSequence: string;
   logoDataUrl: string;
 };
 
@@ -33,7 +34,8 @@ const emptySettings: BusinessSettings = {
   address: "",
   phone: "",
   ice: "",
-  invoiceNumber: "",
+  invoicePrefix: "",
+  invoiceSequence: "",
   logoDataUrl: "",
 };
 
@@ -62,8 +64,10 @@ const uiText = {
     phonePlaceholder: "06XXXXXXXX",
     iceLabel: "ICE (Optionnel)",
     icePlaceholder: "Numéro ICE",
-    invoiceNumberLabel: "N° Devis / Facture",
-    invoiceNumberPlaceholder: "12345",
+    invoicePrefixLabel: "Préfixe Devis / Facture",
+    invoicePrefixPlaceholder: "FAC-",
+    invoiceSequenceLabel: "Numérotation",
+    invoiceSequencePlaceholder: "00012",
     logoLabel: "Logo",
     removeLogo: "Retirer",
     save: "Enregistrer",
@@ -106,8 +110,10 @@ const uiText = {
     phonePlaceholder: "06XXXXXXXX",
     iceLabel: "ICE (اختياري)",
     icePlaceholder: "رقم ICE",
-    invoiceNumberLabel: "رقم عرض السعر / الفاتورة",
-    invoiceNumberPlaceholder: "12345",
+    invoicePrefixLabel: "بادئة عرض السعر / الفاتورة",
+    invoicePrefixPlaceholder: "FAC-",
+    invoiceSequenceLabel: "الترقيم",
+    invoiceSequencePlaceholder: "00012",
     logoLabel: "الشعار",
     removeLogo: "حذف",
     save: "حفظ",
@@ -165,6 +171,7 @@ export function QuoteInvoiceApp() {
   }, []);
 
   const today = new Date().toLocaleDateString("fr-FR");
+  const formattedInvoiceNumber = `${settings.invoicePrefix || "FAC-"}${settings.invoiceSequence || "00012"}`;
 
   const grandTotal = useMemo(
     () => items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0),
@@ -431,11 +438,19 @@ export function QuoteInvoiceApp() {
                     />
                   </Field>
 
-                  <Field label={t.invoiceNumberLabel}>
+                  <Field label={t.invoicePrefixLabel}>
                     <Input
-                      value={settingsDraft.invoiceNumber}
-                      onChange={(e) => setSettingsDraft((prev) => ({ ...prev, invoiceNumber: e.target.value }))}
-                      placeholder={t.invoiceNumberPlaceholder}
+                      value={settingsDraft.invoicePrefix}
+                      onChange={(e) => setSettingsDraft((prev) => ({ ...prev, invoicePrefix: e.target.value }))}
+                      placeholder={t.invoicePrefixPlaceholder}
+                    />
+                  </Field>
+
+                  <Field label={t.invoiceSequenceLabel}>
+                    <Input
+                      value={settingsDraft.invoiceSequence}
+                      onChange={(e) => setSettingsDraft((prev) => ({ ...prev, invoiceSequence: e.target.value }))}
+                      placeholder={t.invoiceSequencePlaceholder}
                     />
                   </Field>
 
@@ -594,7 +609,7 @@ export function QuoteInvoiceApp() {
               <p className="mb-4 text-6xl font-normal uppercase tracking-tight text-[#111111]">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
               <div className="flex gap-2">
                 <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">
-                  {docType === "devis" ? "Devis" : "Facture"} n°{settings.invoiceNumber || "12345"}
+                  {docType === "devis" ? "Devis" : "Facture"} n°{formattedInvoiceNumber}
                 </span>
                 <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">{today}</span>
               </div>
