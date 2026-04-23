@@ -201,8 +201,11 @@ export function QuoteInvoiceApp() {
         backgroundColor: "#ffffff",
         logging: false,
         onclone: (clonedDoc) => {
+          clonedDoc.documentElement.style.backgroundColor = "#ffffff";
+          clonedDoc.documentElement.style.color = "#0f172a";
           clonedDoc.body.style.backgroundColor = "#ffffff";
           clonedDoc.body.style.color = "#0f172a";
+          clonedDoc.body.style.borderColor = "#cbd5e1";
 
           const clonedTemplate = clonedDoc.getElementById("pdf-template");
           if (clonedTemplate) {
@@ -215,6 +218,20 @@ export function QuoteInvoiceApp() {
             clonedTemplate.style.setProperty("--muted", "#f8fafc");
             clonedTemplate.style.setProperty("--border", "#cbd5e1");
             clonedTemplate.style.setProperty("--ring", "#94a3b8");
+
+            clonedTemplate.querySelectorAll<HTMLElement>("*").forEach((element) => {
+              element.style.color = element.style.color || "#0f172a";
+              element.style.borderColor = element.style.borderColor || "#cbd5e1";
+              if (!element.style.backgroundColor || element.style.backgroundColor === "oklch") {
+                element.style.backgroundColor = "transparent";
+              }
+              element.style.setProperty("--background", "#ffffff");
+              element.style.setProperty("--foreground", "#0f172a");
+              element.style.setProperty("--card", "#ffffff");
+              element.style.setProperty("--muted", "#f8fafc");
+              element.style.setProperty("--border", "#cbd5e1");
+              element.style.setProperty("--ring", "#94a3b8");
+            });
           }
         },
       });
