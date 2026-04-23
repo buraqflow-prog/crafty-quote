@@ -189,6 +189,18 @@ export function QuoteInvoiceApp() {
     setIsSettingsOpen(false);
   };
 
+  const incrementInvoiceNumber = () => {
+    setSettings((prev) => {
+      const next = {
+        ...prev,
+        invoiceSequence: incrementSequence(prev.invoiceSequence || "00012"),
+      };
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      setSettingsDraft(next);
+      return next;
+    });
+  };
+
   const updateItem = (id: string, patch: Partial<InvoiceItem>) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)));
   };
@@ -338,6 +350,9 @@ export function QuoteInvoiceApp() {
       toast.error(message);
       window.alert(message);
     } finally {
+      if (settings.autoIncrementInvoiceNumber) {
+        incrementInvoiceNumber();
+      }
       setIsExporting(false);
     }
   };
@@ -457,6 +472,21 @@ export function QuoteInvoiceApp() {
                       onChange={(e) => setSettingsDraft((prev) => ({ ...prev, invoiceSequence: e.target.value }))}
                       placeholder={t.invoiceSequencePlaceholder}
                     />
+                  </Field>
+
+                  <Field label={t.autoIncrementInvoiceNumberLabel}>
+                    <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+                      <span className="text-sm text-foreground">{settingsDraft.autoIncrementInvoiceNumber ? "ON" : "OFF"}</span>
+                      <Switch
+                        checked={settingsDraft.autoIncrementInvoiceNumber}
+                        onCheckedChange={(checked) =>
+                          setSettingsDraft((prev) => ({
+                            ...prev,
+                            autoIncrementInvoiceNumber: checked,
+                          }))
+                        }
+                      />
+                    </div>
                   </Field>
 
                   <Field label={t.logoLabel}>
