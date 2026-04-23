@@ -15,7 +15,8 @@ type BusinessSettings = {
   address: string;
   phone: string;
   ice: string;
-  invoiceNumber: string;
+  invoicePrefix: string;
+  invoiceSequence: string;
   logoDataUrl: string;
 };
 
@@ -33,7 +34,8 @@ const emptySettings: BusinessSettings = {
   address: "",
   phone: "",
   ice: "",
-  invoiceNumber: "",
+  invoicePrefix: "",
+  invoiceSequence: "",
   logoDataUrl: "",
 };
 
@@ -62,8 +64,10 @@ const uiText = {
     phonePlaceholder: "06XXXXXXXX",
     iceLabel: "ICE (Optionnel)",
     icePlaceholder: "Numéro ICE",
-    invoiceNumberLabel: "N° Devis / Facture",
-    invoiceNumberPlaceholder: "12345",
+    invoicePrefixLabel: "Préfixe Devis / Facture",
+    invoicePrefixPlaceholder: "FAC-",
+    invoiceSequenceLabel: "Numérotation",
+    invoiceSequencePlaceholder: "00012",
     logoLabel: "Logo",
     removeLogo: "Retirer",
     save: "Enregistrer",
@@ -106,8 +110,10 @@ const uiText = {
     phonePlaceholder: "06XXXXXXXX",
     iceLabel: "ICE (اختياري)",
     icePlaceholder: "رقم ICE",
-    invoiceNumberLabel: "رقم عرض السعر / الفاتورة",
-    invoiceNumberPlaceholder: "12345",
+    invoicePrefixLabel: "بادئة عرض السعر / الفاتورة",
+    invoicePrefixPlaceholder: "FAC-",
+    invoiceSequenceLabel: "الترقيم",
+    invoiceSequencePlaceholder: "00012",
     logoLabel: "الشعار",
     removeLogo: "حذف",
     save: "حفظ",
