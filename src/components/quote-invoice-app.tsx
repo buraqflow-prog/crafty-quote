@@ -351,19 +351,19 @@ export function QuoteInvoiceApp() {
             </div>
           </section>
 
-          <table className="pdf-table">
+          <table className="pdf-table table-fixed w-full">
             <thead>
               <tr className="pdf-table-head">
-                <th>Description</th>
-                <th>Qté</th>
-                <th>Prix Unitaire</th>
-                <th>Total</th>
+                <th className="w-[55%]">Description</th>
+                <th className="w-[15%]">Qté</th>
+                <th className="w-[15%]">Prix Unitaire</th>
+                <th className="w-[15%]">Total</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
                 <tr key={`pdf-${item.id}`}>
-                  <td>{item.description || "-"}</td>
+                  <td className="break-words whitespace-normal break-all">{item.description || "-"}</td>
                   <td>{item.quantity}</td>
                   <td>{formatCurrency(item.unitPrice)}</td>
                   <td>{formatCurrency(item.quantity * item.unitPrice)}</td>
