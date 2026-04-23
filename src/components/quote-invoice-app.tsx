@@ -259,34 +259,20 @@ export function QuoteInvoiceApp() {
           clonedDoc.documentElement.style.color = "#0f172a";
           clonedDoc.body.style.backgroundColor = "#ffffff";
           clonedDoc.body.style.color = "#0f172a";
-          clonedDoc.body.style.borderColor = "#cbd5e1";
+          clonedDoc.body.style.borderColor = "#e2e8f0";
 
           const clonedTemplate = clonedDoc.getElementById("pdf-template");
           if (clonedTemplate) {
             clonedTemplate.style.backgroundColor = "#ffffff";
             clonedTemplate.style.color = "#0f172a";
-            clonedTemplate.style.borderColor = "#cbd5e1";
+            clonedTemplate.style.borderColor = "#e2e8f0";
             clonedTemplate.style.fontFamily = '"Plus Jakarta Sans", "Inter", system-ui, sans-serif';
             clonedTemplate.style.setProperty("--background", "#ffffff");
             clonedTemplate.style.setProperty("--foreground", "#0f172a");
             clonedTemplate.style.setProperty("--card", "#ffffff");
             clonedTemplate.style.setProperty("--muted", "#f8fafc");
-            clonedTemplate.style.setProperty("--border", "#cbd5e1");
+            clonedTemplate.style.setProperty("--border", "#e2e8f0");
             clonedTemplate.style.setProperty("--ring", "#94a3b8");
-
-            clonedTemplate.querySelectorAll<HTMLElement>("*").forEach((element) => {
-              element.style.color = element.style.color || "#0f172a";
-              element.style.borderColor = element.style.borderColor || "#cbd5e1";
-              if (!element.style.backgroundColor || element.style.backgroundColor === "oklch") {
-                element.style.backgroundColor = "transparent";
-              }
-              element.style.setProperty("--background", "#ffffff");
-              element.style.setProperty("--foreground", "#0f172a");
-              element.style.setProperty("--card", "#ffffff");
-              element.style.setProperty("--muted", "#f8fafc");
-              element.style.setProperty("--border", "#cbd5e1");
-              element.style.setProperty("--ring", "#94a3b8");
-            });
           }
         },
       });
@@ -701,70 +687,70 @@ export function QuoteInvoiceApp() {
         <div
           id="pdf-template"
           ref={pdfTemplateRef}
-          className="absolute top-0 -left-[9999px] min-h-[1123px] w-[794px] bg-[#fcfbf9] px-10 py-9 text-[#111111]"
+          className="absolute top-0 -left-[9999px] min-h-[1123px] w-[794px] border border-slate-200 bg-slate-50 px-10 py-9 text-slate-900"
         >
           <header className="flex items-start justify-between gap-8">
             <div>
-              <p className="mb-8 text-6xl font-normal uppercase tracking-tight text-[#111111]">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
+              <p className="mb-8 text-6xl font-semibold uppercase tracking-tight text-slate-900">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
             </div>
 
             <div className="flex min-h-32 min-w-40 flex-col items-end justify-start gap-4">
               {settings.logoDataUrl ? (
                 <img src={settings.logoDataUrl} alt="Logo" className="h-32 w-auto object-contain" />
               ) : (
-                <div className="flex h-32 w-40 items-center justify-center rounded-full border border-[#111111] text-xs font-medium text-[#111111]">
+                <div className="flex h-32 w-40 items-center justify-center rounded-full border border-slate-300 bg-white text-xs font-medium text-slate-700">
                   LOGO
                 </div>
               )}
 
               <div className="flex gap-2">
-                <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">
+                <span className="rounded-full border border-slate-300 bg-white px-4 py-1 text-sm font-medium text-slate-800">
                   {docType === "devis" ? "Devis" : "Facture"} n°{formattedInvoiceNumber}
                 </span>
-                <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">{today}</span>
+                <span className="rounded-full border border-slate-300 bg-white px-4 py-1 text-sm font-medium text-slate-800">{today}</span>
               </div>
             </div>
           </header>
 
-          <hr className="my-8 border-t border-[#111111]" />
+          <hr className="my-8 border-t border-slate-300" />
 
           <section className="mb-8 grid grid-cols-2 gap-6">
-            <div className="border border-[#000000] bg-[#ffffff] p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">Émetteur</p>
-              <p className="mt-2 text-sm font-bold uppercase text-[#111111]">{settings.companyName || "Votre entreprise"}</p>
-              <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-[#111111]">{settings.address || "Adresse"}</p>
-              <p className="mt-1 text-sm text-[#111111]">{settings.phone || "-"}</p>
-              {settings.ice && <p className="mt-1 text-sm text-[#111111]">ICE: {settings.ice}</p>}
+            <div className="border border-slate-200 bg-white p-4">
+              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-blue-700">Émetteur</p>
+              <p className="mt-2 text-sm font-bold uppercase text-slate-900">{settings.companyName || "Votre entreprise"}</p>
+              <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-slate-700">{settings.address || "Adresse"}</p>
+              <p className="mt-1 text-sm text-slate-700">{settings.phone || "-"}</p>
+              {settings.ice && <p className="mt-1 text-sm text-slate-700">ICE: {settings.ice}</p>}
             </div>
 
-            <div className="border border-[#000000] bg-[#ffffff] p-4 text-right">
-              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">Client</p>
-              <p className="mt-2 text-sm font-bold uppercase text-[#111111]">{clientName || "-"}</p>
-              <p className="mt-1 text-sm text-[#111111]">{clientPhone || "-"}</p>
+            <div className="border border-slate-200 bg-white p-4 text-right">
+              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-blue-700">Client</p>
+              <p className="mt-2 text-sm font-bold uppercase text-slate-900">{clientName || "-"}</p>
+              <p className="mt-1 text-sm text-slate-700">{clientPhone || "-"}</p>
             </div>
           </section>
 
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs font-black uppercase tracking-[0.08em] text-[#111111]">Détail des prestations</p>
-            <p className="text-xs font-medium text-[#111111]">{items.length} ligne(s)</p>
+            <p className="text-xs font-black uppercase tracking-[0.08em] text-slate-800">Détail des prestations</p>
+            <p className="text-xs font-medium text-slate-600">{items.length} ligne(s)</p>
           </div>
 
-          <table className="w-full border-collapse border-2 border-[#000000]">
+          <table className="w-full border-collapse overflow-hidden rounded-md border border-slate-300 bg-white">
             <thead>
-              <tr className="bg-[#111111] text-[#ffffff]">
-                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#ffffff]">Description</th>
-                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#ffffff]">Prix</th>
-                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#ffffff]">Quantité</th>
-                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#ffffff]">Total</th>
+              <tr className="bg-slate-900 text-white">
+                <th className="border border-slate-300 p-3 text-center text-xs font-extrabold uppercase tracking-wider text-white">Description</th>
+                <th className="border border-slate-300 p-3 text-center text-xs font-extrabold uppercase tracking-wider text-white">Prix</th>
+                <th className="border border-slate-300 p-3 text-center text-xs font-extrabold uppercase tracking-wider text-white">Quantité</th>
+                <th className="border border-slate-300 p-3 text-center text-xs font-extrabold uppercase tracking-wider text-white">Total</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={`pdf-${item.id}`} className="bg-transparent">
-                  <td className="break-all whitespace-normal border border-[#000000] px-3 py-4 text-sm font-medium text-[#000000] break-words">{item.description || "-"}</td>
-                  <td className="border border-[#000000] px-3 py-4 text-center text-sm font-medium text-[#000000]">{formatCurrency(item.unitPrice)}</td>
-                  <td className="border border-[#000000] px-3 py-4 text-center text-sm font-medium text-[#000000]">{item.quantity}</td>
-                  <td className="border border-[#000000] px-3 py-4 text-center text-sm font-medium text-[#000000]">{formatCurrency(item.quantity * item.unitPrice)}</td>
+                <tr key={`pdf-${item.id}`} className="bg-white even:bg-slate-50">
+                  <td className="break-all whitespace-normal border border-slate-200 px-3 py-4 text-sm font-medium break-words text-slate-800">{item.description || "-"}</td>
+                  <td className="border border-slate-200 px-3 py-4 text-center text-sm font-medium text-slate-800">{formatCurrency(item.unitPrice)}</td>
+                  <td className="border border-slate-200 px-3 py-4 text-center text-sm font-medium text-slate-800">{item.quantity}</td>
+                  <td className="border border-slate-200 px-3 py-4 text-center text-sm font-semibold text-slate-900">{formatCurrency(item.quantity * item.unitPrice)}</td>
                 </tr>
               ))}
             </tbody>
@@ -772,23 +758,23 @@ export function QuoteInvoiceApp() {
 
           <div className="mt-5 flex justify-end">
             {isVatEnabled ? (
-              <div className="w-80 border border-[#000000] bg-[#ffffff] p-3 text-right">
-                <div className="flex items-center justify-between text-[#111111]">
+              <div className="w-80 border border-slate-200 bg-white p-3 text-right shadow-sm">
+                <div className="flex items-center justify-between text-slate-800">
                   <span className="text-sm font-bold">Total HT</span>
                   <span className="text-sm font-bold">{formatCurrency(totalHT)}</span>
                 </div>
-                <div className="mt-1 flex items-center justify-between text-[#111111]">
+                <div className="mt-1 flex items-center justify-between text-slate-800">
                   <span className="text-sm font-bold">TVA ({vatRate}%)</span>
                   <span className="text-sm font-bold">{formatCurrency(vatAmount)}</span>
                 </div>
-                <div className="mt-2 flex items-center justify-between bg-[#111111] p-3 text-[#ffffff]">
+                <div className="mt-2 flex items-center justify-between rounded-sm bg-slate-900 p-3 text-white">
                   <span className="text-sm font-black">Total TTC</span>
                   <strong className="text-lg font-black">{formatCurrency(totalTTC)}</strong>
                 </div>
               </div>
             ) : (
-              <div className="w-80 border border-[#000000] bg-[#ffffff] p-3">
-                <div className="flex items-center justify-between bg-[#111111] p-3 text-[#ffffff]">
+              <div className="w-80 border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="flex items-center justify-between rounded-sm bg-slate-900 p-3 text-white">
                   <span className="text-sm font-black">Total Global</span>
                   <strong className="text-lg font-black">{formatCurrency(totalHT)}</strong>
                 </div>
@@ -796,13 +782,13 @@ export function QuoteInvoiceApp() {
             )}
           </div>
 
-          <p className="mt-8 text-sm font-semibold uppercase italic text-[#111111]">
+          <p className="mt-8 border-l-4 border-blue-700 pl-3 text-sm font-semibold uppercase italic text-slate-800">
             Arrêté le présent {docType === "devis" ? "DEVIS" : "FACTURE"} à la somme de : {amountInWords.toUpperCase()}.
           </p>
 
           <footer className="mt-10">
-            <hr className="mb-2 border-t border-[#111111]" />
-            <p className="text-xs font-bold text-[#111111]">Merci pour votre confiance</p>
+            <hr className="mb-2 border-t border-slate-300" />
+            <p className="text-xs font-bold text-slate-700">Merci pour votre confiance</p>
           </footer>
         </div>
       </div>
