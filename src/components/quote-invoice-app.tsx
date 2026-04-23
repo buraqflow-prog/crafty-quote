@@ -535,150 +535,163 @@ export function QuoteInvoiceApp() {
           </div>
         </header>
 
-        <div className="mt-6 space-y-4">
-          <div className="invoice-card">
-            <h2 className="invoice-section-title">{t.clientInfoTitle}</h2>
-            <div className="mt-3 grid gap-3">
-              <Field label={t.clientNameLabel}>
-                <Input value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder={t.clientNamePlaceholder} />
-              </Field>
-              <Field label={t.clientPhoneLabel}>
-                <Input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder={t.clientPhonePlaceholder} />
-              </Field>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">{t.documentTypeLabel}</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    type="button"
-                    variant={docType === "devis" ? "default" : "outline"}
-                    onClick={() => setDocType("devis")}
-                  >
-                    {t.quoteLabel}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={docType === "facture" ? "default" : "outline"}
-                    onClick={() => setDocType("facture")}
-                  >
-                    {t.invoiceLabel}
-                  </Button>
+        <div className="mt-6 grid gap-4 xl:grid-cols-12">
+          <div className="space-y-4 xl:col-span-8">
+            <div className="invoice-card">
+              <h2 className="invoice-section-title">{t.clientInfoTitle}</h2>
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <div className="space-y-3">
+                  <Field label={t.clientNameLabel}>
+                    <Input value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder={t.clientNamePlaceholder} />
+                  </Field>
+                  <Field label={t.clientPhoneLabel}>
+                    <Input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder={t.clientPhonePlaceholder} />
+                  </Field>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          <div className="invoice-card">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="invoice-section-title">{t.itemsTitle}</h2>
-              <Button type="button" variant="outline" size="sm" onClick={() => setItems((prev) => [...prev, createItem()])}>
-                <Plus /> {t.addLine}
-              </Button>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {items.map((item, index) => {
-                const lineTotal = item.quantity * item.unitPrice;
-                return (
-                  <div key={item.id} className="invoice-item-card">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">{t.lineLabel} {index + 1}</span>
-                      {items.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setItems((prev) => prev.filter((line) => line.id !== item.id))}
-                          aria-label={t.deleteLine}
-                        >
-                          <Trash2 />
-                        </Button>
-                      )}
-                    </div>
-
-                    <Field label={t.descriptionLabel}>
-                      <Textarea
-                        value={item.description}
-                        onChange={(e) => updateItem(item.id, { description: e.target.value })}
-                        placeholder={t.descriptionPlaceholder}
-                      />
-                    </Field>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <Field label={t.quantityLabel}>
-                        <Input
-                          type="number"
-                          min={1}
-                          value={item.quantity}
-                          onChange={(e) => updateItem(item.id, { quantity: Number(e.target.value) || 1 })}
-                        />
-                      </Field>
-
-                      <Field label={t.unitPriceLabel}>
-                        <Input
-                          type="number"
-                          min={0}
-                          step="0.01"
-                          value={item.unitPrice}
-                          onChange={(e) => updateItem(item.id, { unitPrice: Number(e.target.value) || 0 })}
-                        />
-                      </Field>
-                    </div>
-
-                    <div className="invoice-line-total">{t.subtotalLabel}: {formatCurrency(lineTotal)}</div>
+                <div className="space-y-2 rounded-md border border-border bg-background p-3">
+                  <label className="text-sm font-medium text-foreground">{t.documentTypeLabel}</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      variant={docType === "devis" ? "default" : "outline"}
+                      onClick={() => setDocType("devis")}
+                    >
+                      {t.quoteLabel}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={docType === "facture" ? "default" : "outline"}
+                      onClick={() => setDocType("facture")}
+                    >
+                      {t.invoiceLabel}
+                    </Button>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="invoice-total-card">
-            <div className="w-full space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{t.totalHtLabel}</span>
-                <strong className="text-lg font-semibold text-foreground">{formatCurrency(totalHT)}</strong>
-              </div>
-              {isVatEnabled && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">{t.vatAmountLabel} ({vatRate}%)</span>
-                  <strong className="text-lg font-semibold text-foreground">{formatCurrency(vatAmount)}</strong>
                 </div>
-              )}
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{isVatEnabled ? t.totalTtcLabel : t.totalGlobalLabel}</span>
-                <strong className="text-2xl font-semibold text-foreground">{formatCurrency(totalTTC)}</strong>
+              </div>
+            </div>
+
+            <div className="invoice-card">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="invoice-section-title">{t.itemsTitle}</h2>
+                <Button type="button" variant="outline" size="sm" onClick={() => setItems((prev) => [...prev, createItem()])}>
+                  <Plus /> {t.addLine}
+                </Button>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {items.map((item, index) => {
+                  const lineTotal = item.quantity * item.unitPrice;
+                  return (
+                    <div key={item.id} className="invoice-item-card space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-foreground">{t.lineLabel} {index + 1}</span>
+                        {items.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setItems((prev) => prev.filter((line) => line.id !== item.id))}
+                            aria-label={t.deleteLine}
+                          >
+                            <Trash2 />
+                          </Button>
+                        )}
+                      </div>
+
+                      <Field label={t.descriptionLabel}>
+                        <Textarea
+                          value={item.description}
+                          onChange={(e) => updateItem(item.id, { description: e.target.value })}
+                          placeholder={t.descriptionPlaceholder}
+                        />
+                      </Field>
+
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        <Field label={t.quantityLabel}>
+                          <Input
+                            type="number"
+                            min={1}
+                            value={item.quantity}
+                            onChange={(e) => updateItem(item.id, { quantity: Number(e.target.value) || 1 })}
+                          />
+                        </Field>
+
+                        <Field label={t.unitPriceLabel}>
+                          <Input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={item.unitPrice}
+                            onChange={(e) => updateItem(item.id, { unitPrice: Number(e.target.value) || 0 })}
+                          />
+                        </Field>
+
+                        <div className="rounded-md border border-border bg-surface-soft px-3 py-2 sm:col-span-2 lg:col-span-1">
+                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t.subtotalLabel}</p>
+                          <p className="mt-1 text-base font-semibold text-foreground">{formatCurrency(lineTotal)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
 
-          <div className="invoice-card">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
-                <span className="text-sm font-medium text-foreground">{t.applyVatLabel}</span>
-                <Switch checked={isVatEnabled} onCheckedChange={setIsVatEnabled} />
+          <div className="space-y-4 xl:col-span-4">
+            <div className="invoice-card">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
+                  <span className="text-sm font-medium text-foreground">{t.applyVatLabel}</span>
+                  <Switch checked={isVatEnabled} onCheckedChange={setIsVatEnabled} />
+                </div>
+                {isVatEnabled && (
+                  <Field label={t.vatRateLabel}>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={vatRate}
+                      onChange={(e) => setVatRate(Math.max(0, Number(e.target.value) || 0))}
+                    />
+                  </Field>
+                )}
               </div>
-              {isVatEnabled && (
-                <Field label={t.vatRateLabel}>
-                  <Input
-                    type="number"
-                    min={0}
-                    step="0.01"
-                    value={vatRate}
-                    onChange={(e) => setVatRate(Math.max(0, Number(e.target.value) || 0))}
-                  />
-                </Field>
-              )}
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 gap-3 print:hidden sm:grid-cols-2">
-            <Button type="button" className="h-11" onClick={generatePdf} disabled={isExporting}>
-              {isExporting ? <LoaderCircle className="animate-spin" /> : <FileText />}
-              {isExporting ? t.generatingPdfLabel : t.generatePdfLabel}
-            </Button>
-            <Button type="button" variant="secondary" className="h-11" onClick={sendWhatsApp}>
-              <MessageCircle /> {t.sendWhatsAppLabel}
-            </Button>
+            <div className="invoice-total-card">
+              <div className="w-full space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{t.totalHtLabel}</span>
+                  <strong className="text-lg font-semibold text-foreground">{formatCurrency(totalHT)}</strong>
+                </div>
+                {isVatEnabled && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">{t.vatAmountLabel} ({vatRate}%)</span>
+                    <strong className="text-lg font-semibold text-foreground">{formatCurrency(vatAmount)}</strong>
+                  </div>
+                )}
+                <div className="mt-1 border-t border-border pt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">{isVatEnabled ? t.totalTtcLabel : t.totalGlobalLabel}</span>
+                    <strong className="text-2xl font-semibold text-foreground">{formatCurrency(totalTTC)}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="invoice-card print:hidden">
+              <div className="grid grid-cols-1 gap-3">
+                <Button type="button" className="h-11" onClick={generatePdf} disabled={isExporting}>
+                  {isExporting ? <LoaderCircle className="animate-spin" /> : <FileText />}
+                  {isExporting ? t.generatingPdfLabel : t.generatePdfLabel}
+                </Button>
+                <Button type="button" variant="secondary" className="h-11" onClick={sendWhatsApp}>
+                  <MessageCircle /> {t.sendWhatsAppLabel}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
