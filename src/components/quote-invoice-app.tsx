@@ -724,6 +724,15 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+function incrementSequence(value: string) {
+  const match = value.match(/^(.*?)(\d+)$/);
+  if (!match) return "00001";
+
+  const [, prefix, digits] = match;
+  const nextNumber = String(Number.parseInt(digits, 10) + 1).padStart(digits.length, "0");
+  return `${prefix}${nextNumber}`;
+}
+
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
