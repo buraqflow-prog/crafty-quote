@@ -679,11 +679,11 @@ export function QuoteInvoiceApp() {
 
           <table className="w-full border-collapse border-2 border-[#000000]">
             <thead>
-              <tr className="bg-[#f3f4f6] text-[#000000]">
-                <th className="border-2 border-[#000000] p-3 text-left text-xs font-extrabold uppercase tracking-wider text-[#000000]">Description</th>
-                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#000000]">Prix</th>
-                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#000000]">Quantité</th>
-                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#000000]">Total</th>
+              <tr className="bg-[#111111] text-[#ffffff]">
+                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#ffffff]">Description</th>
+                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#ffffff]">Prix</th>
+                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#ffffff]">Quantité</th>
+                <th className="border-2 border-[#000000] p-3 text-center text-xs font-extrabold uppercase tracking-wider text-[#ffffff]">Total</th>
               </tr>
             </thead>
             <tbody>
