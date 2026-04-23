@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
 type DocumentType = "devis" | "facture";
@@ -17,6 +18,7 @@ type BusinessSettings = {
   ice: string;
   invoicePrefix: string;
   invoiceSequence: string;
+  autoIncrementInvoiceNumber: boolean;
   logoDataUrl: string;
 };
 
@@ -36,6 +38,7 @@ const emptySettings: BusinessSettings = {
   ice: "",
   invoicePrefix: "",
   invoiceSequence: "",
+  autoIncrementInvoiceNumber: false,
   logoDataUrl: "",
 };
 
@@ -68,6 +71,7 @@ const uiText = {
     invoicePrefixPlaceholder: "FAC-",
     invoiceSequenceLabel: "Numérotation",
     invoiceSequencePlaceholder: "00012",
+    autoIncrementInvoiceNumberLabel: "Incrémenter automatiquement au clic sur Générer le PDF",
     logoLabel: "Logo",
     removeLogo: "Retirer",
     save: "Enregistrer",
@@ -114,6 +118,7 @@ const uiText = {
     invoicePrefixPlaceholder: "FAC-",
     invoiceSequenceLabel: "الترقيم",
     invoiceSequencePlaceholder: "00012",
+    autoIncrementInvoiceNumberLabel: "زيادة الترقيم تلقائيًا عند الضغط على إنشاء الفاتورة",
     logoLabel: "الشعار",
     removeLogo: "حذف",
     save: "حفظ",
