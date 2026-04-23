@@ -607,12 +607,18 @@ export function QuoteInvoiceApp() {
           </div>
 
           <table className="w-full table-fixed border-collapse border-2 border-[#000000] text-sm">
+            <colgroup>
+              <col style={{ width: "390px" }} />
+              <col style={{ width: "108px" }} />
+              <col style={{ width: "108px" }} />
+              <col style={{ width: "108px" }} />
+            </colgroup>
             <thead>
               <tr>
-                <th className="w-[55%] border-2 border-[#000000] bg-[#f8fafc] p-3 text-left font-black uppercase text-[#000000]">Description</th>
-                <th className="w-[15%] border-2 border-[#000000] bg-[#f8fafc] p-3 text-left font-black uppercase text-[#000000]">Qté</th>
-                <th className="w-[15%] border-2 border-[#000000] bg-[#f8fafc] p-3 text-left font-black uppercase text-[#000000]">Prix Unitaire</th>
-                <th className="w-[15%] border-2 border-[#000000] bg-[#f8fafc] p-3 text-left font-black uppercase text-[#000000]">Total</th>
+                <th className="border-2 border-[#000000] bg-[#f8fafc] p-3 text-left font-black uppercase text-[#000000]">Description</th>
+                <th className="border-2 border-[#000000] bg-[#f8fafc] p-3 text-left font-black uppercase text-[#000000]">Qté</th>
+                <th className="border-2 border-[#000000] bg-[#f8fafc] p-3 text-left font-black uppercase text-[#000000]">Prix Unitaire</th>
+                <th className="border-2 border-[#000000] bg-[#f8fafc] p-3 text-left font-black uppercase text-[#000000]">Total</th>
               </tr>
             </thead>
             <tbody>
