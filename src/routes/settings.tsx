@@ -1,22 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate, createFileRoute, redirect } from "@tanstack/react-router";
+import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
 import { LoaderCircle, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { fetchUserProfile, profileInputSchema, upsertUserProfile, uploadProfileLogo } from "@/lib/profile";
 
 export const Route = createFileRoute("/settings")({
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) {
-      throw redirect({ to: "/auth" });
-    }
-  },
   component: SettingsPage,
 });
 
