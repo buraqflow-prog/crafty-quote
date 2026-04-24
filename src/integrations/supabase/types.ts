@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      invoices: {
+        Row: {
+          client_name: string | null
+          created_at: string
+          document_type: string
+          id: string
+          invoice_number: string | null
+          issued_at: string
+          payload: Json
+          total_ht: number
+          total_ttc: number
+          updated_at: string
+          user_id: string
+          vat_rate: number
+        }
+        Insert: {
+          client_name?: string | null
+          created_at?: string
+          document_type: string
+          id?: string
+          invoice_number?: string | null
+          issued_at?: string
+          payload: Json
+          total_ht?: number
+          total_ttc?: number
+          updated_at?: string
+          user_id: string
+          vat_rate?: number
+        }
+        Update: {
+          client_name?: string | null
+          created_at?: string
+          document_type?: string
+          id?: string
+          invoice_number?: string | null
+          issued_at?: string
+          payload?: Json
+          total_ht?: number
+          total_ttc?: number
+          updated_at?: string
+          user_id?: string
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address: string | null
