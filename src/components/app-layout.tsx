@@ -32,9 +32,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 hidden border-b border-border bg-background/95 backdrop-blur md:block">
-        <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4">
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-background">
+      <header className="sticky top-0 z-40 hidden w-full box-border border-b border-border bg-background/95 px-4 backdrop-blur md:block">
+        <div className="flex h-14 w-full items-center justify-between box-border">
           <nav className="flex items-center gap-2">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -77,9 +77,9 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       </header>
 
-      <main className="pb-24 md:pb-8">{children}</main>
+      <main className="w-full max-w-[100vw] overflow-x-hidden pb-24 md:pb-8">{children}</main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 m-0 w-full max-w-[100vw] box-border border-t border-border bg-background/95 px-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] pt-2 backdrop-blur md:hidden">
         <ul className="grid grid-cols-3 gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
