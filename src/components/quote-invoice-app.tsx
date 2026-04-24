@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Wifi, WifiOff, Save } from "lucide-react";
+import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Wifi, WifiOff, Save, LayoutDashboard } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,7 @@ const uiText = {
     languageAr: "Ar",
     openSettings: "Ouvrir les paramètres",
     manageProfile: "Profil",
+    dashboardLabel: "Dashboard",
     settingsTitle: "Paramètres entreprise",
     settingsDescription: "Paramètres de numérotation enregistrés localement.",
     invoicePrefixLabel: "Préfixe Devis / Facture",
@@ -100,6 +101,7 @@ const uiText = {
     languageAr: "Ar",
     openSettings: "الإعدادات",
     manageProfile: "الملف",
+    dashboardLabel: "لوحة التحكم",
     settingsTitle: "إعدادات الشركة",
     settingsDescription: "إعدادات الترقيم يتم حفظها محليًا.",
     invoicePrefixLabel: "بادئة عرض السعر / الفاتورة",
@@ -147,11 +149,13 @@ const uiText = {
 
 export function QuoteInvoiceApp({
   onLogout,
+  onOpenDashboard,
   onOpenSettings,
   profile,
   userId,
 }: {
   onLogout?: () => void | Promise<void>;
+  onOpenDashboard?: () => void;
   onOpenSettings?: () => void;
   profile?: UserProfile | null;
   userId: string;
@@ -590,6 +594,12 @@ export function QuoteInvoiceApp({
             {onOpenSettings && (
               <Button type="button" variant="outline" size="sm" onClick={onOpenSettings}>
                 <Settings /> {t.manageProfile}
+              </Button>
+            )}
+
+            {onOpenDashboard && (
+              <Button type="button" variant="outline" size="sm" onClick={onOpenDashboard}>
+                <LayoutDashboard /> {t.dashboardLabel}
               </Button>
             )}
 
