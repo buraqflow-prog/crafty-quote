@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle } from "lucide-react";
+import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -105,6 +105,7 @@ const uiText = {
     generatePdfLabel: "Générer le PDF",
     generatingPdfLabel: "Génération en cours...",
     sendWhatsAppLabel: "Envoyer par WhatsApp",
+    logoutLabel: "Déconnexion",
   },
   ar: {
     appTitle: "عرض سعر / فاتورة",
@@ -161,10 +162,11 @@ const uiText = {
     generatePdfLabel: "إنشاء الفاتورة",
     generatingPdfLabel: "جاري الإنشاء...",
     sendWhatsAppLabel: "إرسال عبر واتساب",
+    logoutLabel: "تسجيل الخروج",
   },
 } as const;
 
-export function QuoteInvoiceApp() {
+export function QuoteInvoiceApp({ onLogout }: { onLogout?: () => void | Promise<void> }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<BusinessSettings>(emptySettings);
   const [settingsDraft, setSettingsDraft] = useState<BusinessSettings>(settings);
@@ -543,6 +545,12 @@ export function QuoteInvoiceApp() {
                 </Button>
               </DialogContent>
             </Dialog>
+
+            {onLogout && (
+              <Button type="button" variant="outline" size="sm" onClick={onLogout}>
+                <LogOut /> {t.logoutLabel}
+              </Button>
+            )}
           </div>
         </header>
 
