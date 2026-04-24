@@ -64,6 +64,7 @@ function GeneratorPage() {
       userId={user.id}
       profile={profile}
       onOpenSettings={() => navigate({ to: "/settings" })}
+      onOpenDashboard={() => navigate({ to: "/" })}
       onLogout={async () => {
         try {
           await signOut();
