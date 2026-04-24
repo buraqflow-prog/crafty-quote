@@ -63,13 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (error) throw error;
 
-        if (data.user) {
-          await supabase.from("profiles").upsert({
-            id: data.user.id,
-            email: data.user.email ?? email,
-          });
-        }
-
         return {
           needsEmailVerification: !data.session,
         };
