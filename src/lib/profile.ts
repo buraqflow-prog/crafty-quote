@@ -64,13 +64,20 @@ export async function uploadProfileLogo(userId: string, file: File) {
     throw new Error("Le logo doit faire moins de 5MB.");
   }
 
+  const safeBaseName = file.name
+    .replace(/\.[^/.]+$/, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9-_]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "") || "logo";
   const extension = file.name.split(".").pop()?.toLowerCase() || "png";
   const safeExt = extension.replace(/[^a-z0-9]/g, "") || "png";
-  const path = `${userId}/logo-${Date.now()}.${safeExt}`;
+  const uniqueFileName = `${crypto.randomUUID()}-${safeBaseName}.${safeExt}`;
+  const path = `${userId}/${uniqueFileName}`;
 
   const { error: uploadError } = await supabase.storage.from("logos").upload(path, file, {
     cacheControl: "3600",
-    upsert: true,
+    upsert: false,
   });
 
   if (uploadError) throw uploadError;
