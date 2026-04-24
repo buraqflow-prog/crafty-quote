@@ -60,7 +60,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="w-full max-w-[100vw] overflow-x-hidden">
         {children}
         <Scripts />
       </body>
