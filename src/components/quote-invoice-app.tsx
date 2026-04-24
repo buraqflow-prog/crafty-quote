@@ -654,7 +654,7 @@ export function QuoteInvoiceApp({
             </Dialog>
 
             {onOpenSettings && (
-              <Button type="button" variant="outline" size="sm" onClick={onOpenSettings}>
+              <Button type="button" variant="outline" size="sm" onClick={onOpenSettings} className="hidden md:inline-flex">
                 <Settings /> {t.manageProfile}
               </Button>
             )}
@@ -672,6 +672,14 @@ export function QuoteInvoiceApp({
             )}
           </div>
         </header>
+
+        {onOpenSettings && (
+          <div className="mt-3 md:hidden">
+            <Button type="button" variant="outline" className="h-10 w-full" onClick={onOpenSettings}>
+              <Settings /> {t.manageProfile}
+            </Button>
+          </div>
+        )}
 
         <div className="mt-6 grid gap-4 xl:grid-cols-12">
           <div className="space-y-4 xl:col-span-8">
