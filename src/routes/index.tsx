@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/lib/auth";
 import { syncOfflineInvoices } from "@/lib/offline-invoice-sync";
 
@@ -17,7 +16,14 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type InvoiceRow = Tables<"invoices">;
+type InvoiceRow = {
+  id: string;
+  issued_at: string;
+  client_name: string | null;
+  invoice_number: string | null;
+  document_type: string;
+  total_ttc: number;
+};
 
 function Index() {
   const { user, isLoading, signOut } = useAuth();
@@ -35,27 +41,27 @@ function Index() {
     let mounted = true;
     setIsInvoicesLoading(true);
 
-    supabase
-      .from("invoices")
-      .select("id, issued_at, client_name, invoice_number, document_type, total_ttc")
-      .eq("user_id", user.id)
-      .order("issued_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (!mounted) return;
+    const loadInvoices = async () => {
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("id, issued_at, client_name, invoice_number, document_type, total_ttc")
+        .eq("user_id", user.id)
+        .order("issued_at", { ascending: false });
 
-        if (error) {
-          toast.error("Impossible de charger les documents.");
-          setInvoices([]);
-          return;
-        }
+      if (!mounted) return;
 
-        setInvoices(data ?? []);
-      })
-      .finally(() => {
-        if (mounted) {
-          setIsInvoicesLoading(false);
-        }
-      });
+      if (error) {
+        toast.error("Impossible de charger les documents.");
+        setInvoices([]);
+        setIsInvoicesLoading(false);
+        return;
+      }
+
+      setInvoices((data ?? []) as InvoiceRow[]);
+      setIsInvoicesLoading(false);
+    };
+
+    void loadInvoices();
 
     return () => {
       mounted = false;
