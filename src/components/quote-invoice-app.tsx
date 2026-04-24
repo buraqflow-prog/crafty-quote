@@ -184,8 +184,11 @@ export function QuoteInvoiceApp({ onLogout }: { onLogout?: () => void | Promise<
   const pdfTemplateRef = useRef<HTMLDivElement>(null);
   const isArabic = language === "ar";
   const t = uiText[language];
+  const canUseLocalStorage = typeof window !== "undefined";
 
   useEffect(() => {
+    if (!canUseLocalStorage) return;
+
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
 
@@ -197,7 +200,7 @@ export function QuoteInvoiceApp({ onLogout }: { onLogout?: () => void | Promise<
       setSettings(emptySettings);
       setSettingsDraft(emptySettings);
     }
-  }, []);
+  }, [canUseLocalStorage]);
 
   const today = new Date().toLocaleDateString("fr-FR");
   const formattedInvoiceNumber = `${settings.invoicePrefix || "FAC-"}${settings.invoiceSequence || "00012"}`;
@@ -212,7 +215,9 @@ export function QuoteInvoiceApp({ onLogout }: { onLogout?: () => void | Promise<
 
   const saveSettings = () => {
     setSettings(settingsDraft);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settingsDraft));
+    if (canUseLocalStorage) {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settingsDraft));
+    }
     setIsSettingsOpen(false);
   };
 
@@ -222,7 +227,9 @@ export function QuoteInvoiceApp({ onLogout }: { onLogout?: () => void | Promise<
         ...prev,
         invoiceSequence: incrementSequence(prev.invoiceSequence || "00012"),
       };
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      if (canUseLocalStorage) {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      }
       setSettingsDraft(next);
       return next;
     });
