@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { enqueueOfflineInvoice, saveInvoiceOnline, type InvoicePayload } from "@/lib/offline-invoice-sync";
 import type { UserProfile } from "@/lib/profile";
+import { useUiLanguage, type AppLanguage } from "@/lib/ui-language";
 
 type DocumentType = "devis" | "facture";
-type UILanguage = "fr" | "ar";
 
 type BusinessSettings = {
   invoicePrefix: string;
@@ -29,7 +29,8 @@ const STORAGE_KEY = "craftsman_invoice_settings_v1";
 const DRAFT_STORAGE_KEY = "craftsman_invoice_draft_v1";
 
 type InvoiceDraft = {
-  language: UILanguage;
+  uiLanguage: AppLanguage;
+  invoiceContentLanguage: AppLanguage;
   docType: DocumentType;
   clientName: string;
   clientPhone: string;
@@ -60,6 +61,8 @@ const uiText = {
     languageToggle: "Changer la langue",
     languageFr: "Fr",
     languageAr: "Ar",
+    languageEn: "En",
+    invoiceContentLanguageLabel: "Langue de la facture",
     openSettings: "Ouvrir les paramètres",
     manageProfile: "Profil",
     backLabel: "Retour",
@@ -112,6 +115,8 @@ const uiText = {
     languageToggle: "تغيير اللغة",
     languageFr: "Fr",
     languageAr: "Ar",
+    languageEn: "En",
+    invoiceContentLanguageLabel: "لغة الفاتورة",
     openSettings: "الإعدادات",
     manageProfile: "الملف",
     backLabel: "رجوع",
@@ -157,6 +162,60 @@ const uiText = {
     logoutLabel: "تسجيل الخروج",
     networkOnline: "متصل",
     networkOffline: "غير متصل",
+  },
+  en: {
+    appTitle: "Quote / Invoice",
+    appSubtitle: "Elegant generator for artisans",
+    languageToggle: "Change language",
+    languageFr: "Fr",
+    languageAr: "Ar",
+    languageEn: "En",
+    invoiceContentLanguageLabel: "Invoice language",
+    openSettings: "Open settings",
+    manageProfile: "Profile",
+    backLabel: "Back",
+    settingsTitle: "Business settings",
+    settingsDescription: "Numbering settings are saved locally.",
+    invoicePrefixLabel: "Quote / Invoice prefix",
+    invoicePrefixPlaceholder: "FAC-",
+    invoiceSequenceLabel: "Numbering",
+    invoiceSequencePlaceholder: "00012",
+    autoIncrementInvoiceNumberLabel: "Auto increment when clicking Generate PDF",
+    save: "Save",
+    clientInfoTitle: "Client information",
+    clientNameLabel: "Client name",
+    clientNamePlaceholder: "Full name",
+    clientPhoneLabel: "Client phone",
+    clientPhonePlaceholder: "06XXXXXXXX",
+    clientAddressLabel: "Client address (Optional)",
+    clientAddressPlaceholder: "Client address",
+    clientIceLabel: "Client ICE (Optional)",
+    clientIcePlaceholder: "Client ICE number",
+    documentTypeLabel: "Document type",
+    quoteLabel: "Quote",
+    invoiceLabel: "Invoice",
+    itemsTitle: "Services / Items",
+    addLine: "Add",
+    lineLabel: "Line",
+    deleteLine: "Delete line",
+    descriptionLabel: "Description",
+    descriptionPlaceholder: "Ex: Electrical installation",
+    quantityLabel: "Quantity",
+    unitPriceLabel: "Unit price",
+    subtotalLabel: "Subtotal",
+    totalGlobalLabel: "Global total",
+    applyVatLabel: "Apply VAT",
+    vatRateLabel: "VAT rate (%)",
+    totalHtLabel: "Total excl. VAT",
+    vatAmountLabel: "VAT amount",
+    totalTtcLabel: "Total incl. VAT",
+    generatePdfLabel: "Generate PDF",
+    generatingPdfLabel: "Generating...",
+    sendWhatsAppLabel: "Send via WhatsApp",
+    saveInvoiceLabel: "Save",
+    logoutLabel: "Logout",
+    networkOnline: "Online",
+    networkOffline: "Offline",
   },
 } as const;
 
