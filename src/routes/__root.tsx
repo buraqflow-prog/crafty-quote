@@ -1,6 +1,15 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider, useAuth } from "@/lib/auth";
+
+type RouterContext = {
+  auth: {
+    userId: string | null;
+    isLoading: boolean;
+  };
+};
 
 function NotFoundComponent() {
   return (
@@ -24,7 +33,7 @@ function NotFoundComponent() {
   );
 }
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -65,5 +74,25 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  return <Outlet />;
+  return (
+    <AuthProvider>
+      <RootContent />
+      <Toaster richColors position="top-right" />
+    </AuthProvider>
+  );
+}
+
+function RootContent() {
+  const { user, isLoading } = useAuth();
+
+  return (
+    <Outlet
+      context={{
+        auth: {
+          userId: user?.id ?? null,
+          isLoading,
+        },
+      }}
+    />
+  );
 }
