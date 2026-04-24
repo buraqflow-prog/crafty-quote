@@ -4,6 +4,8 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
+import { uiDictionary } from "@/lib/ui-i18n";
+import { useUiLanguage } from "@/lib/ui-language";
 
 type AppLayoutProps = {
   children: React.ReactNode;
@@ -18,11 +20,13 @@ const navItems = [
 export function AppLayout({ children }: AppLayoutProps) {
   const { user, isLoading, signOut } = useAuth();
   const location = useLocation();
+  const { uiLanguage, setUiLanguage } = useUiLanguage();
+  const t = uiDictionary[uiLanguage];
 
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
-        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> Chargement...
+        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> {t.loading}
       </div>
     );
   }
@@ -54,26 +58,40 @@ export function AppLayout({ children }: AppLayoutProps) {
                   }`}
                 >
                   <Icon className="h-4 w-4" />
-                  <span>{item.label}</span>
+                  <span>
+                    {item.to === "/dashboard"
+                      ? t.navDashboard
+                      : item.to === "/invoice/new"
+                        ? t.navNew
+                        : t.navSettings}
+                  </span>
                 </Link>
               );
             })}
           </nav>
 
-          <Button
-            type="button"
-            variant="outline"
-            onClick={async () => {
-              try {
-                await signOut();
-                toast.success("Déconnexion réussie");
-              } catch {
-                toast.error("Impossible de se déconnecter");
-              }
-            }}
-          >
-            <LogOut className="h-4 w-4" /> Déconnexion
-          </Button>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex items-center rounded-md border border-border bg-background p-1" role="group" aria-label={t.languageUi}>
+              <Button type="button" size="sm" variant={uiLanguage === "fr" ? "default" : "ghost"} onClick={() => setUiLanguage("fr")}>{t.languageFr}</Button>
+              <Button type="button" size="sm" variant={uiLanguage === "ar" ? "default" : "ghost"} onClick={() => setUiLanguage("ar")}>{t.languageAr}</Button>
+              <Button type="button" size="sm" variant={uiLanguage === "en" ? "default" : "ghost"} onClick={() => setUiLanguage("en")}>{t.languageEn}</Button>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={async () => {
+                try {
+                  await signOut();
+                  toast.success(t.logoutSuccess);
+                } catch {
+                  toast.error(t.logoutError);
+                }
+              }}
+            >
+              <LogOut className="h-4 w-4" /> {t.logout}
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -109,7 +127,13 @@ export function AppLayout({ children }: AppLayoutProps) {
                   >
                     <Icon className="h-5 w-5" />
                   </span>
-                  <span>{item.label}</span>
+                  <span>
+                    {item.to === "/dashboard"
+                      ? t.navDashboard
+                      : item.to === "/invoice/new"
+                        ? t.navNew
+                        : t.navSettings}
+                  </span>
                 </Link>
               </li>
             );
