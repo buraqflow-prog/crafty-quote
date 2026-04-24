@@ -596,62 +596,86 @@ export function QuoteInvoiceApp() {
                 </Button>
               </div>
 
-              <div className="mt-4 space-y-3">
-                {items.map((item, index) => {
-                  const lineTotal = item.quantity * item.unitPrice;
-                  return (
-                    <div key={item.id} className="invoice-item-card space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-foreground">{t.lineLabel} {index + 1}</span>
-                        {items.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setItems((prev) => prev.filter((line) => line.id !== item.id))}
-                            aria-label={t.deleteLine}
-                          >
-                            <Trash2 />
-                          </Button>
-                        )}
-                      </div>
+              <div className="mt-4 overflow-hidden rounded-md border border-border">
+                <div className="hidden grid-cols-12 border-b border-border bg-surface-soft px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground md:grid">
+                  <div className="col-span-1 text-center">#</div>
+                  <div className="col-span-5">{t.descriptionLabel}</div>
+                  <div className="col-span-2 text-center">{t.quantityLabel}</div>
+                  <div className="col-span-2 text-center">{t.unitPriceLabel}</div>
+                  <div className="col-span-2 text-center">{t.subtotalLabel}</div>
+                </div>
 
-                      <Field label={t.descriptionLabel}>
-                        <Textarea
-                          value={item.description}
-                          onChange={(e) => updateItem(item.id, { description: e.target.value })}
-                          placeholder={t.descriptionPlaceholder}
-                        />
-                      </Field>
+                <div className="divide-y divide-border">
+                  {items.map((item, index) => {
+                    const lineTotal = item.quantity * item.unitPrice;
+                    return (
+                      <div key={item.id} className="grid grid-cols-1 gap-3 bg-background p-3 md:grid-cols-12 md:items-center md:gap-2">
+                        <div className="flex items-center justify-between md:col-span-1 md:justify-center">
+                          <span className="text-sm font-semibold text-foreground">{index + 1}</span>
+                          {items.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setItems((prev) => prev.filter((line) => line.id !== item.id))}
+                              aria-label={t.deleteLine}
+                              className="h-8 w-8 md:hidden"
+                            >
+                              <Trash2 />
+                            </Button>
+                          )}
+                        </div>
 
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        <Field label={t.quantityLabel}>
+                        <div className="md:col-span-5">
+                          <Input
+                            value={item.description}
+                            onChange={(e) => updateItem(item.id, { description: e.target.value })}
+                            placeholder={t.descriptionPlaceholder}
+                          />
+                        </div>
+
+                        <div className="md:col-span-2">
                           <Input
                             type="number"
                             min={1}
                             value={item.quantity}
-                            onChange={(e) => updateItem(item.id, { quantity: Number(e.target.value) || 1 })}
+                            onChange={(e) => updateItem(item.id, { quantity: Math.max(1, Number(e.target.value) || 1) })}
                           />
-                        </Field>
+                        </div>
 
-                        <Field label={t.unitPriceLabel}>
+                        <div className="md:col-span-2">
                           <Input
                             type="number"
                             min={0}
                             step="0.01"
                             value={item.unitPrice}
-                            onChange={(e) => updateItem(item.id, { unitPrice: Number(e.target.value) || 0 })}
+                            onChange={(e) => updateItem(item.id, { unitPrice: Math.max(0, Number(e.target.value) || 0) })}
                           />
-                        </Field>
-
-                        <div className="rounded-md border border-border bg-surface-soft px-3 py-2 sm:col-span-2 lg:col-span-1">
-                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t.subtotalLabel}</p>
-                          <p className="mt-1 text-base font-semibold text-foreground">{formatCurrency(lineTotal)}</p>
                         </div>
+
+                        <div className="flex items-center justify-between rounded-md border border-border bg-surface-soft px-3 py-2 md:col-span-2 md:justify-center">
+                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground md:hidden">{t.subtotalLabel}</p>
+                          <p className="text-sm font-semibold text-foreground">{formatCurrency(lineTotal)}</p>
+                        </div>
+
+                        {items.length > 1 && (
+                          <div className="hidden md:col-span-12 md:flex md:justify-end">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setItems((prev) => prev.filter((line) => line.id !== item.id))}
+                              aria-label={t.deleteLine}
+                              className="h-8"
+                            >
+                              <Trash2 />
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
