@@ -20,6 +20,43 @@ export type InvoicePayload = {
   totalTTC: number;
   isVatEnabled: boolean;
   issuedAt: string;
+  fullState: {
+    language: "fr" | "ar";
+    documentType: "devis" | "facture";
+    invoiceNumber: string;
+    client: {
+      name: string;
+      phone: string;
+      address: string;
+      ice: string;
+    };
+    items: Array<{
+      description: string;
+      quantity: number;
+      unitPrice: number;
+      lineTotal: number;
+    }>;
+    totals: {
+      totalHT: number;
+      vatRate: number;
+      vatAmount: number;
+      totalTTC: number;
+      isVatEnabled: boolean;
+    };
+    issuedAt: string;
+    settings: {
+      invoicePrefix: string;
+      invoiceSequence: string;
+      autoIncrementInvoiceNumber: boolean;
+    };
+    businessProfile: {
+      businessName: string;
+      businessAddress: string;
+      businessPhone: string;
+      businessIce: string;
+      businessLogoUrl: string;
+    };
+  };
 };
 
 type OfflineInvoiceQueueItem = {
