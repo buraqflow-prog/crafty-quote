@@ -292,10 +292,11 @@ export function QuoteInvoiceApp({
   profile?: UserProfile | null;
   userId: string;
 }) {
+  const { uiLanguage, setUiLanguage } = useUiLanguage();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<BusinessSettings>(emptySettings);
   const [settingsDraft, setSettingsDraft] = useState<BusinessSettings>(settings);
-  const [language, setLanguage] = useState<UILanguage>("fr");
+  const [invoiceContentLanguage, setInvoiceContentLanguage] = useState<AppLanguage>("fr");
 
   const [docType, setDocType] = useState<DocumentType>("devis");
   const [clientName, setClientName] = useState("");
@@ -309,8 +310,10 @@ export function QuoteInvoiceApp({
   const [isSavingInvoice, setIsSavingInvoice] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const pdfTemplateRef = useRef<HTMLDivElement>(null);
-  const isArabic = language === "ar";
-  const t = uiText[language];
+  const isUiArabic = uiLanguage === "ar";
+  const isInvoiceArabic = invoiceContentLanguage === "ar";
+  const t = uiText[uiLanguage];
+  const pdfT = invoicePdfText[invoiceContentLanguage];
   const canUseLocalStorage = typeof window !== "undefined";
 
   useEffect(() => {
@@ -351,7 +354,11 @@ export function QuoteInvoiceApp({
 
     try {
       const draft = JSON.parse(rawDraft) as Partial<InvoiceDraft>;
-      setLanguage(draft.language === "ar" ? "ar" : "fr");
+      setInvoiceContentLanguage(
+        draft.invoiceContentLanguage === "ar" || draft.invoiceContentLanguage === "en"
+          ? draft.invoiceContentLanguage
+          : "fr",
+      );
       setDocType(draft.docType === "facture" ? "facture" : "devis");
       setClientName(typeof draft.clientName === "string" ? draft.clientName : "");
       setClientPhone(typeof draft.clientPhone === "string" ? draft.clientPhone : "");
@@ -378,7 +385,8 @@ export function QuoteInvoiceApp({
     if (!canUseLocalStorage) return;
 
     const draft: InvoiceDraft = {
-      language,
+      uiLanguage,
+      invoiceContentLanguage,
       docType,
       clientName,
       clientPhone,
@@ -390,7 +398,7 @@ export function QuoteInvoiceApp({
     };
 
     window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
-  }, [canUseLocalStorage, clientAddress, clientIce, clientName, clientPhone, docType, isVatEnabled, items, language, vatRate]);
+  }, [canUseLocalStorage, clientAddress, clientIce, clientName, clientPhone, docType, invoiceContentLanguage, isVatEnabled, items, uiLanguage, vatRate]);
 
   const today = new Date().toLocaleDateString("fr-FR");
   const formattedInvoiceNumber = `${settings.invoicePrefix || "FAC-"}${settings.invoiceSequence || "00012"}`;
@@ -624,7 +632,8 @@ export function QuoteInvoiceApp({
       isVatEnabled,
       issuedAt: new Date().toISOString(),
       fullState: {
-        language,
+        uiLanguage,
+        invoiceContentLanguage,
         documentType: docType,
         invoiceNumber: formattedInvoiceNumber,
         client: {
@@ -686,8 +695,8 @@ export function QuoteInvoiceApp({
     <main className="invoice-shell">
       <section
         className="invoice-container print:hidden"
-        dir={isArabic ? "rtl" : "ltr"}
-        style={{ fontFamily: isArabic ? '"Tajawal", "Cairo", sans-serif' : undefined }}
+        dir={isUiArabic ? "rtl" : "ltr"}
+        style={{ fontFamily: isUiArabic ? '"Tajawal", "Cairo", sans-serif' : undefined }}
       >
         <header className="flex items-center justify-between gap-3">
           <div>
@@ -703,11 +712,14 @@ export function QuoteInvoiceApp({
               role="group"
               aria-label={t.languageToggle}
             >
-              <Button type="button" size="sm" variant={language === "fr" ? "default" : "ghost"} onClick={() => setLanguage("fr")}>
+              <Button type="button" size="sm" variant={uiLanguage === "fr" ? "default" : "ghost"} onClick={() => setUiLanguage("fr")}>
                 {t.languageFr}
               </Button>
-              <Button type="button" size="sm" variant={language === "ar" ? "default" : "ghost"} onClick={() => setLanguage("ar")}>
+              <Button type="button" size="sm" variant={uiLanguage === "ar" ? "default" : "ghost"} onClick={() => setUiLanguage("ar")}>
                 {t.languageAr}
+              </Button>
+              <Button type="button" size="sm" variant={uiLanguage === "en" ? "default" : "ghost"} onClick={() => setUiLanguage("en")}>
+                {t.languageEn}
               </Button>
             </div>
 
@@ -853,6 +865,15 @@ export function QuoteInvoiceApp({
                     >
                       {t.invoiceLabel}
                     </Button>
+                  </div>
+
+                  <div className="mt-3 space-y-2">
+                    <label className="text-sm font-medium text-foreground">{t.invoiceContentLanguageLabel}</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button type="button" size="sm" variant={invoiceContentLanguage === "fr" ? "default" : "outline"} onClick={() => setInvoiceContentLanguage("fr")}>{t.languageFr}</Button>
+                      <Button type="button" size="sm" variant={invoiceContentLanguage === "ar" ? "default" : "outline"} onClick={() => setInvoiceContentLanguage("ar")}>{t.languageAr}</Button>
+                      <Button type="button" size="sm" variant={invoiceContentLanguage === "en" ? "default" : "outline"} onClick={() => setInvoiceContentLanguage("en")}>{t.languageEn}</Button>
+                    </div>
                   </div>
                 </div>
               </div>
