@@ -47,7 +47,7 @@ function Index() {
     const loadInvoices = async () => {
       const { data, error } = await supabase
         .from("invoices")
-        .select("id, issued_at, client_name, invoice_number, document_type, total_ttc")
+        .select("id, issued_at, client_name, invoice_number, document_type, total_ttc, payload")
         .eq("user_id", user.id)
         .order("issued_at", { ascending: false });
 
