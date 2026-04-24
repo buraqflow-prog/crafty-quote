@@ -22,6 +22,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
+    if (!supabase) {
+      setIsLoading(false);
+      return () => {
+        mounted = false;
+      };
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
       setSession(data.session ?? null);
@@ -49,10 +56,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       isLoading,
       signIn: async (email, password) => {
+        if (!supabase) throw new Error("Supabase configuration is missing.");
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       },
       signUp: async (email, password) => {
+        if (!supabase) throw new Error("Supabase configuration is missing.");
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -68,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
       },
       signOut: async () => {
+        if (!supabase) throw new Error("Supabase configuration is missing.");
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
       },
