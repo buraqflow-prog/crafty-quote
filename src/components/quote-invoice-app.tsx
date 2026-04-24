@@ -6,20 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import type { UserProfile } from "@/lib/profile";
 
 type DocumentType = "devis" | "facture";
 type UILanguage = "fr" | "ar";
 
 type BusinessSettings = {
-  companyName: string;
-  address: string;
-  phone: string;
-  ice: string;
   invoicePrefix: string;
   invoiceSequence: string;
   autoIncrementInvoiceNumber: boolean;
-  logoDataUrl: string;
 };
 
 type InvoiceItem = {
@@ -32,14 +27,9 @@ type InvoiceItem = {
 const STORAGE_KEY = "craftsman_invoice_settings_v1";
 
 const emptySettings: BusinessSettings = {
-  companyName: "",
-  address: "",
-  phone: "",
-  ice: "",
   invoicePrefix: "",
   invoiceSequence: "",
   autoIncrementInvoiceNumber: false,
-  logoDataUrl: "",
 };
 
 const createItem = (): InvoiceItem => ({
@@ -57,23 +47,14 @@ const uiText = {
     languageFr: "Fr",
     languageAr: "Ar",
     openSettings: "Ouvrir les paramètres",
+    manageProfile: "Profil",
     settingsTitle: "Paramètres entreprise",
-    settingsDescription: "Ces informations sont enregistrées uniquement dans votre navigateur.",
-    companyNameLabel: "Nom de l'entreprise",
-    companyNamePlaceholder: "Atelier Exemple",
-    addressLabel: "Adresse",
-    addressPlaceholder: "Adresse complète",
-    phoneLabel: "Téléphone",
-    phonePlaceholder: "06XXXXXXXX",
-    iceLabel: "ICE (Optionnel)",
-    icePlaceholder: "Numéro ICE",
+    settingsDescription: "Paramètres de numérotation enregistrés localement.",
     invoicePrefixLabel: "Préfixe Devis / Facture",
     invoicePrefixPlaceholder: "FAC-",
     invoiceSequenceLabel: "Numérotation",
     invoiceSequencePlaceholder: "00012",
     autoIncrementInvoiceNumberLabel: "Incrémenter automatiquement au clic sur Générer le PDF",
-    logoLabel: "Logo",
-    removeLogo: "Retirer",
     save: "Enregistrer",
     clientInfoTitle: "Informations client",
     clientNameLabel: "Nom du Client",
@@ -114,23 +95,14 @@ const uiText = {
     languageFr: "Fr",
     languageAr: "Ar",
     openSettings: "الإعدادات",
+    manageProfile: "الملف",
     settingsTitle: "إعدادات الشركة",
-    settingsDescription: "يتم حفظ هذه المعلومات فقط داخل متصفحك.",
-    companyNameLabel: "اسم الشركة",
-    companyNamePlaceholder: "ورشة المثال",
-    addressLabel: "العنوان",
-    addressPlaceholder: "العنوان الكامل",
-    phoneLabel: "رقم الهاتف",
-    phonePlaceholder: "06XXXXXXXX",
-    iceLabel: "ICE (اختياري)",
-    icePlaceholder: "رقم ICE",
+    settingsDescription: "إعدادات الترقيم يتم حفظها محليًا.",
     invoicePrefixLabel: "بادئة عرض السعر / الفاتورة",
     invoicePrefixPlaceholder: "FAC-",
     invoiceSequenceLabel: "الترقيم",
     invoiceSequencePlaceholder: "00012",
     autoIncrementInvoiceNumberLabel: "زيادة الترقيم تلقائيًا عند الضغط على إنشاء الفاتورة",
-    logoLabel: "الشعار",
-    removeLogo: "حذف",
     save: "حفظ",
     clientInfoTitle: "معلومات الزبون",
     clientNameLabel: "اسم الزبون",
@@ -166,7 +138,15 @@ const uiText = {
   },
 } as const;
 
-export function QuoteInvoiceApp({ onLogout }: { onLogout?: () => void | Promise<void> }) {
+export function QuoteInvoiceApp({
+  onLogout,
+  onOpenSettings,
+  profile,
+}: {
+  onLogout?: () => void | Promise<void>;
+  onOpenSettings?: () => void;
+  profile?: UserProfile | null;
+}) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<BusinessSettings>(emptySettings);
   const [settingsDraft, setSettingsDraft] = useState<BusinessSettings>(settings);
@@ -239,14 +219,11 @@ export function QuoteInvoiceApp({ onLogout }: { onLogout?: () => void | Promise<
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)));
   };
 
-  const handleLogoUpload = (file: File | undefined) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setSettingsDraft((prev) => ({ ...prev, logoDataUrl: String(reader.result ?? "") }));
-    };
-    reader.readAsDataURL(file);
-  };
+  const businessName = profile?.business_name?.trim() || "Votre entreprise";
+  const businessAddress = profile?.address?.trim() || "Adresse";
+  const businessPhone = profile?.phone?.trim() || "-";
+  const businessIce = profile?.ice_number?.trim() || "";
+  const businessLogoUrl = profile?.logo_url?.trim() || "";
 
   const generatePdf = async () => {
     if (isExporting || !pdfTemplateRef.current) return;
@@ -462,38 +439,6 @@ export function QuoteInvoiceApp({ onLogout }: { onLogout?: () => void | Promise<
                 </DialogHeader>
 
                 <div className="space-y-3">
-                  <Field label={t.companyNameLabel}>
-                    <Input
-                      value={settingsDraft.companyName}
-                      onChange={(e) => setSettingsDraft((prev) => ({ ...prev, companyName: e.target.value }))}
-                      placeholder={t.companyNamePlaceholder}
-                    />
-                  </Field>
-
-                  <Field label={t.addressLabel}>
-                    <Textarea
-                      value={settingsDraft.address}
-                      onChange={(e) => setSettingsDraft((prev) => ({ ...prev, address: e.target.value }))}
-                      placeholder={t.addressPlaceholder}
-                    />
-                  </Field>
-
-                  <Field label={t.phoneLabel}>
-                    <Input
-                      value={settingsDraft.phone}
-                      onChange={(e) => setSettingsDraft((prev) => ({ ...prev, phone: e.target.value }))}
-                      placeholder={t.phonePlaceholder}
-                    />
-                  </Field>
-
-                  <Field label={t.iceLabel}>
-                    <Input
-                      value={settingsDraft.ice}
-                      onChange={(e) => setSettingsDraft((prev) => ({ ...prev, ice: e.target.value }))}
-                      placeholder={t.icePlaceholder}
-                    />
-                  </Field>
-
                   <Field label={t.invoicePrefixLabel}>
                     <Input
                       value={settingsDraft.invoicePrefix}
@@ -525,26 +470,6 @@ export function QuoteInvoiceApp({ onLogout }: { onLogout?: () => void | Promise<
                     </div>
                   </Field>
 
-                  <Field label={t.logoLabel}>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleLogoUpload(e.target.files?.[0])}
-                    />
-                    {settingsDraft.logoDataUrl && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <img src={settingsDraft.logoDataUrl} alt="Logo entreprise" className="h-10 w-10 rounded-sm object-contain ring-1 ring-border" />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSettingsDraft((prev) => ({ ...prev, logoDataUrl: "" }))}
-                        >
-                          {t.removeLogo}
-                        </Button>
-                      </div>
-                    )}
-                  </Field>
                 </div>
 
                 <Button type="button" onClick={saveSettings} className="w-full">
@@ -552,6 +477,12 @@ export function QuoteInvoiceApp({ onLogout }: { onLogout?: () => void | Promise<
                 </Button>
               </DialogContent>
             </Dialog>
+
+            {onOpenSettings && (
+              <Button type="button" variant="outline" size="sm" onClick={onOpenSettings}>
+                <Settings /> {t.manageProfile}
+              </Button>
+            )}
 
             {onLogout && (
               <Button type="button" variant="outline" size="sm" onClick={onLogout}>
@@ -563,6 +494,25 @@ export function QuoteInvoiceApp({ onLogout }: { onLogout?: () => void | Promise<
 
         <div className="mt-6 grid gap-4 xl:grid-cols-12">
           <div className="space-y-4 xl:col-span-8">
+            <div className="invoice-card">
+              <h2 className="invoice-section-title">Business Info</h2>
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-base font-semibold text-foreground">{businessName}</p>
+                  <p className="whitespace-pre-line text-sm text-muted-foreground">{businessAddress}</p>
+                  <p className="text-sm text-muted-foreground">{businessPhone}</p>
+                  {businessIce ? <p className="text-sm text-muted-foreground">ICE: {businessIce}</p> : null}
+                </div>
+                <div className="flex h-16 w-24 items-center justify-center rounded-md border border-border bg-background">
+                  {businessLogoUrl ? (
+                    <img src={businessLogoUrl} alt="Logo entreprise" className="h-full w-full rounded-md object-contain" loading="lazy" />
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Logo</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="invoice-card">
               <h2 className="invoice-section-title">{t.clientInfoTitle}</h2>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -764,8 +714,8 @@ export function QuoteInvoiceApp({ onLogout }: { onLogout?: () => void | Promise<
             </div>
 
             <div className="flex min-h-32 min-w-40 flex-col items-end justify-start gap-4">
-              {settings.logoDataUrl ? (
-                <img src={settings.logoDataUrl} alt="Logo" className="h-32 w-auto object-contain" />
+              {businessLogoUrl ? (
+                <img src={businessLogoUrl} alt="Logo" className="h-32 w-auto object-contain" />
               ) : (
                 <div className="flex h-32 w-40 items-center justify-center rounded-full border border-[#111111] text-xs font-medium text-[#111111]">
                   LOGO
@@ -786,10 +736,10 @@ export function QuoteInvoiceApp({ onLogout }: { onLogout?: () => void | Promise<
           <section className="mb-8 grid grid-cols-2 gap-6">
             <div className="border border-[#000000] bg-[#ffffff] p-4">
               <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">Émetteur</p>
-              <p className="mt-2 text-sm font-bold uppercase text-[#111111]">{settings.companyName || "Votre entreprise"}</p>
-              <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-[#111111]">{settings.address || "Adresse"}</p>
-              <p className="mt-1 text-sm text-[#111111]">{settings.phone || "-"}</p>
-              {settings.ice && <p className="mt-1 text-sm text-[#111111]">ICE: {settings.ice}</p>}
+              <p className="mt-2 text-sm font-bold uppercase text-[#111111]">{businessName}</p>
+              <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-[#111111]">{businessAddress}</p>
+              <p className="mt-1 text-sm text-[#111111]">{businessPhone}</p>
+              {businessIce ? <p className="mt-1 text-sm text-[#111111]">ICE: {businessIce}</p> : null}
             </div>
 
             <div className="border border-[#000000] bg-[#ffffff] p-4 text-right">
