@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Wifi, WifiOff, Save, LayoutDashboard } from "lucide-react";
+import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Wifi, WifiOff, Save, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,19 @@ type InvoiceItem = {
 };
 
 const STORAGE_KEY = "craftsman_invoice_settings_v1";
+const DRAFT_STORAGE_KEY = "craftsman_invoice_draft_v1";
+
+type InvoiceDraft = {
+  language: UILanguage;
+  docType: DocumentType;
+  clientName: string;
+  clientPhone: string;
+  clientAddress: string;
+  clientIce: string;
+  items: InvoiceItem[];
+  isVatEnabled: boolean;
+  vatRate: number;
+};
 
 const emptySettings: BusinessSettings = {
   invoicePrefix: "",
