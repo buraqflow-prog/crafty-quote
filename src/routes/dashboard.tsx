@@ -84,7 +84,6 @@ function DashboardPage() {
         <section className="mx-auto w-full max-w-6xl space-y-6">
           <header className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">Dashboard Artisan</h1>
               <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t.dashboardTitle}</h1>
               <p className="mt-1 text-sm text-muted-foreground">{t.dashboardSubtitle}</p>
             </div>
@@ -98,21 +97,18 @@ function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total TTC</CardTitle>
                 <CardTitle className="text-sm font-medium text-muted-foreground">{t.totalTtc}</CardTitle>
               </CardHeader>
               <CardContent>{isInvoicesLoading ? <Skeleton className="h-8 w-40" /> : <p className="text-2xl font-semibold text-foreground">{formatMad(totalTtc)}</p>}</CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total Documents</CardTitle>
                 <CardTitle className="text-sm font-medium text-muted-foreground">{t.totalDocuments}</CardTitle>
               </CardHeader>
               <CardContent>{isInvoicesLoading ? <Skeleton className="h-8 w-24" /> : <p className="text-2xl font-semibold text-foreground">{totalDocuments}</p>}</CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Devis vs Factures</CardTitle>
                 <CardTitle className="text-sm font-medium text-muted-foreground">{t.quotesVsInvoices}</CardTitle>
               </CardHeader>
               <CardContent className="flex items-center gap-2">
