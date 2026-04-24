@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Eye, FileText, LoaderCircle, Plus } from "lucide-react";
+import { Download, Eye, LoaderCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/lib/auth";
+import { downloadInvoicePdf } from "@/lib/invoice-pdf";
 import { syncOfflineInvoices } from "@/lib/offline-invoice-sync";
 
 export const Route = createFileRoute("/")({
@@ -23,6 +25,7 @@ type InvoiceRow = {
   invoice_number: string | null;
   document_type: string;
   total_ttc: number;
+  payload: Json;
 };
 
 function Index() {
