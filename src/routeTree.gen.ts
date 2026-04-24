@@ -14,6 +14,7 @@ import { Route as GeneratorRouteImport } from './routes/generator'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as InvoiceNewRouteImport } from './routes/invoice.new'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -40,6 +41,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InvoiceNewRoute = InvoiceNewRouteImport.update({
+  id: '/invoice/new',
+  path: '/invoice/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/generator': typeof GeneratorRoute
   '/settings': typeof SettingsRoute
+  '/invoice/new': typeof InvoiceNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/generator': typeof GeneratorRoute
   '/settings': typeof SettingsRoute
+  '/invoice/new': typeof InvoiceNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,27 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/generator': typeof GeneratorRoute
   '/settings': typeof SettingsRoute
+  '/invoice/new': typeof InvoiceNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard' | '/generator' | '/settings'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/generator'
+    | '/settings'
+    | '/invoice/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/generator' | '/settings'
-  id: '__root__' | '/' | '/auth' | '/dashboard' | '/generator' | '/settings'
+  to: '/' | '/auth' | '/dashboard' | '/generator' | '/settings' | '/invoice/new'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/generator'
+    | '/settings'
+    | '/invoice/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +99,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   GeneratorRoute: typeof GeneratorRoute
   SettingsRoute: typeof SettingsRoute
+  InvoiceNewRoute: typeof InvoiceNewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +139,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invoice/new': {
+      id: '/invoice/new'
+      path: '/invoice/new'
+      fullPath: '/invoice/new'
+      preLoaderRoute: typeof InvoiceNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +155,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   GeneratorRoute: GeneratorRoute,
   SettingsRoute: SettingsRoute,
+  InvoiceNewRoute: InvoiceNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
