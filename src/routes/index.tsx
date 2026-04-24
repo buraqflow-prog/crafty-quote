@@ -207,7 +207,7 @@ function Index() {
                     <TableHead>N° Document</TableHead>
                     <TableHead>Type</TableHead>
                     <TableHead className="text-right">Total</TableHead>
-                    <TableHead className="w-16 text-right">Voir</TableHead>
+                    <TableHead className="w-28 text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -222,12 +222,39 @@ function Index() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-semibold">{formatMad(Number(invoice.total_ttc ?? 0))}</TableCell>
-                      <TableCell className="text-right">
-                        <Button asChild variant="ghost" size="icon" aria-label="Voir le document">
-                          <Link to="/generator">
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </Button>
+                      <TableCell>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button asChild variant="ghost" size="icon" aria-label="Voir le document">
+                            <Link to="/generator">
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Télécharger PDF"
+                            onClick={() => {
+                              try {
+                                downloadInvoicePdf({
+                                  invoiceId: invoice.id,
+                                  payload: invoice.payload,
+                                  fallback: {
+                                    documentType: invoice.document_type,
+                                    invoiceNumber: invoice.invoice_number,
+                                    clientName: invoice.client_name,
+                                    issuedAt: invoice.issued_at,
+                                    totalTtc: Number(invoice.total_ttc ?? 0),
+                                  },
+                                });
+                              } catch {
+                                toast.error("Impossible de générer le PDF pour ce document.");
+                              }
+                            }}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
