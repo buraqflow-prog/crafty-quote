@@ -21,7 +21,8 @@ export type InvoicePayload = {
   isVatEnabled: boolean;
   issuedAt: string;
   fullState: {
-    language: "fr" | "ar";
+    uiLanguage: "fr" | "ar" | "en";
+    invoiceContentLanguage: "fr" | "ar" | "en";
     documentType: "devis" | "facture";
     invoiceNumber: string;
     client: {
