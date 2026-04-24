@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 
-import { assertSupabaseConfigured } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 type AuthContextValue = {
   user: User | null;
@@ -21,7 +21,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    const supabase = assertSupabaseConfigured();
+
+    if (!supabase) {
+      setIsLoading(false);
+      return () => {
+        mounted = false;
+      };
+    }
 
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
@@ -50,12 +56,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       isLoading,
       signIn: async (email, password) => {
-        const supabase = assertSupabaseConfigured();
+        if (!supabase) throw new Error("Supabase configuration is missing.");
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       },
       signUp: async (email, password) => {
-        const supabase = assertSupabaseConfigured();
+        if (!supabase) throw new Error("Supabase configuration is missing.");
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -71,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
       },
       signOut: async () => {
-        const supabase = assertSupabaseConfigured();
+        if (!supabase) throw new Error("Supabase configuration is missing.");
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
       },
