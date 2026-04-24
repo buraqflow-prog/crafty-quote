@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { LoaderCircle, Upload } from "lucide-react";
 import { toast } from "sonner";
 
+import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,7 +31,7 @@ const emptyForm: SettingsFormState = {
 };
 
 function SettingsPage() {
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
   const [form, setForm] = useState<SettingsFormState>(emptyForm);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -75,13 +76,7 @@ function SettingsPage() {
     return !parsed.success;
   }, [form]);
 
-  if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Chargement...</div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/auth" />;
-  }
+  if (!user) return null;
 
   const handleLogoUpload = async (file: File | null) => {
     if (!file) return;
@@ -118,15 +113,16 @@ function SettingsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-background px-4 py-10">
-      <section className="mx-auto w-full max-w-3xl rounded-lg border border-border bg-card p-6 sm:p-8">
+    <AppLayout>
+      <main className="min-h-screen bg-background px-4 py-10">
+        <section className="mx-auto w-full max-w-3xl rounded-lg border border-border bg-card p-6 sm:p-8">
         <div className="mb-6 flex items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">Paramètres entreprise</h1>
             <p className="mt-1 text-sm text-muted-foreground">Gérez les informations utilisées dans vos devis et factures.</p>
           </div>
           <Button type="button" variant="outline" asChild>
-            <Link to="/">Retour</Link>
+            <Link to="/dashboard">Retour</Link>
           </Button>
         </div>
 
@@ -212,8 +208,9 @@ function SettingsPage() {
             </Button>
           </form>
         )}
-      </section>
-    </main>
+        </section>
+      </main>
+    </AppLayout>
   );
 }
 
