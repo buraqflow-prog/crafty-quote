@@ -87,7 +87,7 @@ const uiText = {
     generatePdfLabel: "Générer le PDF",
     generatingPdfLabel: "Génération en cours...",
     sendWhatsAppLabel: "Envoyer par WhatsApp",
-    saveInvoiceLabel: "Enregistrer la facture",
+    saveInvoiceLabel: "Enregistrer",
     logoutLabel: "Déconnexion",
     networkOnline: "En ligne",
     networkOffline: "Hors ligne",
@@ -138,7 +138,7 @@ const uiText = {
     generatePdfLabel: "إنشاء الفاتورة",
     generatingPdfLabel: "جاري الإنشاء...",
     sendWhatsAppLabel: "إرسال عبر واتساب",
-    saveInvoiceLabel: "حفظ الفاتورة",
+    saveInvoiceLabel: "حفظ",
     logoutLabel: "تسجيل الخروج",
     networkOnline: "متصل",
     networkOffline: "غير متصل",
@@ -438,6 +438,43 @@ export function QuoteInvoiceApp({
       totalTTC,
       isVatEnabled,
       issuedAt: new Date().toISOString(),
+      fullState: {
+        language,
+        documentType: docType,
+        invoiceNumber: formattedInvoiceNumber,
+        client: {
+          name: clientName,
+          phone: clientPhone,
+          address: clientAddress,
+          ice: clientIce,
+        },
+        items: items.map((item) => ({
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          lineTotal: item.quantity * item.unitPrice,
+        })),
+        totals: {
+          totalHT,
+          vatRate,
+          vatAmount,
+          totalTTC,
+          isVatEnabled,
+        },
+        issuedAt: new Date().toISOString(),
+        settings: {
+          invoicePrefix: settings.invoicePrefix,
+          invoiceSequence: settings.invoiceSequence,
+          autoIncrementInvoiceNumber: settings.autoIncrementInvoiceNumber,
+        },
+        businessProfile: {
+          businessName,
+          businessAddress,
+          businessPhone,
+          businessIce,
+          businessLogoUrl,
+        },
+      },
     };
 
     setIsSavingInvoice(true);
@@ -446,15 +483,15 @@ export function QuoteInvoiceApp({
 
       if (online) {
         await saveInvoiceOnline(userId, payload);
-        toast.success("Facture enregistrée.");
+        toast.success("Document enregistré avec succès");
       } else {
         if (typeof window !== "undefined") {
           enqueueOfflineInvoice(userId, payload);
         }
-        toast("Mode hors-ligne: Facture enregistrée localement. Synchronisation dès le retour du réseau.");
+        toast("Mode hors-ligne : document ajouté à la file locale.");
       }
     } catch {
-      toast.error("Impossible d'enregistrer la facture.");
+      toast.error("Erreur lors de l'enregistrement du document");
     } finally {
       setIsSavingInvoice(false);
     }
