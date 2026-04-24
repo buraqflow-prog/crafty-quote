@@ -5,6 +5,7 @@ import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth";
 import { setupPwaRegistration } from "@/lib/pwa";
+import { UiLanguageProvider, useUiLanguage } from "@/lib/ui-language";
 
 function NotFoundComponent() {
   return (
@@ -75,8 +76,20 @@ function RootComponent() {
 
   return (
     <AuthProvider>
+      <UiLanguageProvider>
+        <RootContent />
+      </UiLanguageProvider>
+    </AuthProvider>
+  );
+}
+
+function RootContent() {
+  const { isUiRtl } = useUiLanguage();
+
+  return (
+    <div dir={isUiRtl ? "rtl" : "ltr"} className="w-full max-w-[100vw] overflow-x-hidden">
       <Outlet />
       <Toaster richColors position="top-right" />
-    </AuthProvider>
+    </div>
   );
 }
