@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Wifi, WifiOff, Save, LayoutDashboard } from "lucide-react";
+import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Wifi, WifiOff, Save, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,19 @@ type InvoiceItem = {
 };
 
 const STORAGE_KEY = "craftsman_invoice_settings_v1";
+const DRAFT_STORAGE_KEY = "craftsman_invoice_draft_v1";
+
+type InvoiceDraft = {
+  language: UILanguage;
+  docType: DocumentType;
+  clientName: string;
+  clientPhone: string;
+  clientAddress: string;
+  clientIce: string;
+  items: InvoiceItem[];
+  isVatEnabled: boolean;
+  vatRate: number;
+};
 
 const emptySettings: BusinessSettings = {
   invoicePrefix: "",
@@ -49,7 +62,7 @@ const uiText = {
     languageAr: "Ar",
     openSettings: "Ouvrir les paramètres",
     manageProfile: "Profil",
-    dashboardLabel: "Dashboard",
+    backLabel: "Retour",
     settingsTitle: "Paramètres entreprise",
     settingsDescription: "Paramètres de numérotation enregistrés localement.",
     invoicePrefixLabel: "Préfixe Devis / Facture",
@@ -101,7 +114,7 @@ const uiText = {
     languageAr: "Ar",
     openSettings: "الإعدادات",
     manageProfile: "الملف",
-    dashboardLabel: "لوحة التحكم",
+    backLabel: "رجوع",
     settingsTitle: "إعدادات الشركة",
     settingsDescription: "إعدادات الترقيم يتم حفظها محليًا.",
     invoicePrefixLabel: "بادئة عرض السعر / الفاتورة",
@@ -149,13 +162,13 @@ const uiText = {
 
 export function QuoteInvoiceApp({
   onLogout,
-  onOpenDashboard,
+  onBack,
   onOpenSettings,
   profile,
   userId,
 }: {
   onLogout?: () => void | Promise<void>;
-  onOpenDashboard?: () => void;
+  onBack?: () => void;
   onOpenSettings?: () => void;
   profile?: UserProfile | null;
   userId: string;
@@ -210,6 +223,55 @@ export function QuoteInvoiceApp({
       setSettingsDraft(emptySettings);
     }
   }, [canUseLocalStorage]);
+
+  useEffect(() => {
+    if (!canUseLocalStorage) return;
+
+    const rawDraft = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!rawDraft) return;
+
+    try {
+      const draft = JSON.parse(rawDraft) as Partial<InvoiceDraft>;
+      setLanguage(draft.language === "ar" ? "ar" : "fr");
+      setDocType(draft.docType === "facture" ? "facture" : "devis");
+      setClientName(typeof draft.clientName === "string" ? draft.clientName : "");
+      setClientPhone(typeof draft.clientPhone === "string" ? draft.clientPhone : "");
+      setClientAddress(typeof draft.clientAddress === "string" ? draft.clientAddress : "");
+      setClientIce(typeof draft.clientIce === "string" ? draft.clientIce : "");
+      setIsVatEnabled(Boolean(draft.isVatEnabled));
+      setVatRate(typeof draft.vatRate === "number" ? draft.vatRate : 20);
+
+      if (Array.isArray(draft.items) && draft.items.length > 0) {
+        const normalizedItems = draft.items.map((item) => ({
+          id: typeof item.id === "string" ? item.id : crypto.randomUUID(),
+          description: typeof item.description === "string" ? item.description : "",
+          quantity: typeof item.quantity === "number" ? Math.max(1, item.quantity) : 1,
+          unitPrice: typeof item.unitPrice === "number" ? Math.max(0, item.unitPrice) : 0,
+        }));
+        setItems(normalizedItems);
+      }
+    } catch {
+      // ignore corrupted draft
+    }
+  }, [canUseLocalStorage]);
+
+  useEffect(() => {
+    if (!canUseLocalStorage) return;
+
+    const draft: InvoiceDraft = {
+      language,
+      docType,
+      clientName,
+      clientPhone,
+      clientAddress,
+      clientIce,
+      items,
+      isVatEnabled,
+      vatRate,
+    };
+
+    window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+  }, [canUseLocalStorage, clientAddress, clientIce, clientName, clientPhone, docType, isVatEnabled, items, language, vatRate]);
 
   const today = new Date().toLocaleDateString("fr-FR");
   const formattedInvoiceNumber = `${settings.invoicePrefix || "FAC-"}${settings.invoiceSequence || "00012"}`;
@@ -597,9 +659,9 @@ export function QuoteInvoiceApp({
               </Button>
             )}
 
-            {onOpenDashboard && (
-              <Button type="button" variant="outline" size="sm" onClick={onOpenDashboard}>
-                <LayoutDashboard /> {t.dashboardLabel}
+            {onBack && (
+              <Button type="button" variant="outline" size="sm" onClick={onBack}>
+                <ArrowLeft /> {t.backLabel}
               </Button>
             )}
 
