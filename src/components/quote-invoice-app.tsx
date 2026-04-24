@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut } from "lucide-react";
+import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Wifi, WifiOff, Save } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { enqueueOfflineInvoice, saveInvoiceOnline, type InvoicePayload } from "@/lib/offline-invoice-sync";
 import type { UserProfile } from "@/lib/profile";
 
 type DocumentType = "devis" | "facture";
@@ -86,7 +87,10 @@ const uiText = {
     generatePdfLabel: "Générer le PDF",
     generatingPdfLabel: "Génération en cours...",
     sendWhatsAppLabel: "Envoyer par WhatsApp",
+    saveInvoiceLabel: "Enregistrer la facture",
     logoutLabel: "Déconnexion",
+    networkOnline: "En ligne",
+    networkOffline: "Hors ligne",
   },
   ar: {
     appTitle: "عرض سعر / فاتورة",
@@ -134,7 +138,10 @@ const uiText = {
     generatePdfLabel: "إنشاء الفاتورة",
     generatingPdfLabel: "جاري الإنشاء...",
     sendWhatsAppLabel: "إرسال عبر واتساب",
+    saveInvoiceLabel: "حفظ الفاتورة",
     logoutLabel: "تسجيل الخروج",
+    networkOnline: "متصل",
+    networkOffline: "غير متصل",
   },
 } as const;
 
@@ -142,10 +149,12 @@ export function QuoteInvoiceApp({
   onLogout,
   onOpenSettings,
   profile,
+  userId,
 }: {
   onLogout?: () => void | Promise<void>;
   onOpenSettings?: () => void;
   profile?: UserProfile | null;
+  userId: string;
 }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<BusinessSettings>(emptySettings);
@@ -161,10 +170,26 @@ export function QuoteInvoiceApp({
   const [isVatEnabled, setIsVatEnabled] = useState(false);
   const [vatRate, setVatRate] = useState(20);
   const [isExporting, setIsExporting] = useState(false);
+  const [isSavingInvoice, setIsSavingInvoice] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
   const pdfTemplateRef = useRef<HTMLDivElement>(null);
   const isArabic = language === "ar";
   const t = uiText[language];
   const canUseLocalStorage = typeof window !== "undefined";
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const updateNetwork = () => setIsOnline(window.navigator.onLine);
+    updateNetwork();
+    window.addEventListener("online", updateNetwork);
+    window.addEventListener("offline", updateNetwork);
+
+    return () => {
+      window.removeEventListener("online", updateNetwork);
+      window.removeEventListener("offline", updateNetwork);
+    };
+  }, []);
 
   useEffect(() => {
     if (!canUseLocalStorage) return;
@@ -393,6 +418,48 @@ export function QuoteInvoiceApp({
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   };
 
+  const saveInvoice = async () => {
+    if (isSavingInvoice) return;
+
+    const payload: InvoicePayload = {
+      documentType: docType,
+      invoiceNumber: formattedInvoiceNumber,
+      clientName,
+      clientPhone,
+      clientAddress,
+      clientIce,
+      items: items.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+      })),
+      totalHT,
+      vatRate,
+      totalTTC,
+      isVatEnabled,
+      issuedAt: new Date().toISOString(),
+    };
+
+    setIsSavingInvoice(true);
+    try {
+      const online = typeof navigator !== "undefined" ? navigator.onLine : true;
+
+      if (online) {
+        await saveInvoiceOnline(userId, payload);
+        toast.success("Facture enregistrée.");
+      } else {
+        if (typeof window !== "undefined") {
+          enqueueOfflineInvoice(userId, payload);
+        }
+        toast("Mode hors-ligne: Facture enregistrée localement. Synchronisation dès le retour du réseau.");
+      }
+    } catch {
+      toast.error("Impossible d'enregistrer la facture.");
+    } finally {
+      setIsSavingInvoice(false);
+    }
+  };
+
   return (
     <main className="invoice-shell">
       <section
@@ -407,6 +474,11 @@ export function QuoteInvoiceApp({
           </div>
 
           <div className="flex items-center gap-2">
+            <div className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-xs font-medium text-muted-foreground">
+              {isOnline ? <Wifi className="h-3.5 w-3.5 text-primary" /> : <WifiOff className="h-3.5 w-3.5 text-destructive" />}
+              <span>{isOnline ? t.networkOnline : t.networkOffline}</span>
+            </div>
+
             <div
               className="inline-flex items-center rounded-md border border-border bg-background p-1"
               role="group"
@@ -689,6 +761,10 @@ export function QuoteInvoiceApp({
 
             <div className="invoice-card print:hidden">
               <div className="grid grid-cols-1 gap-3">
+                <Button type="button" variant="outline" className="h-11" onClick={saveInvoice} disabled={isSavingInvoice}>
+                  {isSavingInvoice ? <LoaderCircle className="animate-spin" /> : <Save />}
+                  {t.saveInvoiceLabel}
+                </Button>
                 <Button type="button" className="h-11" onClick={generatePdf} disabled={isExporting}>
                   {isExporting ? <LoaderCircle className="animate-spin" /> : <FileText />}
                   {isExporting ? t.generatingPdfLabel : t.generatePdfLabel}
