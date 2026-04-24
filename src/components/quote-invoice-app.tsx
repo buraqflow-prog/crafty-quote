@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Wifi, WifiOff, Save, ArrowLeft } from "lucide-react";
+import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Save, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -577,10 +577,7 @@ export function QuoteInvoiceApp({
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="inline-flex h-9 items-center gap-2 rounded-md border border-border bg-background px-3 text-xs font-medium text-muted-foreground">
-              {isOnline ? <Wifi className="h-3.5 w-3.5 text-primary" /> : <WifiOff className="h-3.5 w-3.5 text-destructive" />}
-              <span>{isOnline ? t.networkOnline : t.networkOffline}</span>
-            </div>
+            <span className="sr-only">{isOnline ? t.networkOnline : t.networkOffline}</span>
 
             <div
               className="inline-flex items-center rounded-md border border-border bg-background p-1"
