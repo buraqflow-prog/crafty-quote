@@ -9,8 +9,11 @@ import { uiDictionary } from "@/lib/ui-i18n";
 import { UiLanguageProvider, useUiLanguage } from "@/lib/ui-language";
 
 function NotFoundComponent() {
-  const { uiLanguage } = useUiLanguage();
-  const t = uiDictionary[uiLanguage];
+  const lang =
+    typeof document !== "undefined" && ["fr", "ar", "en"].includes(document.documentElement.lang)
+      ? (document.documentElement.lang as "fr" | "ar" | "en")
+      : "fr";
+  const t = uiDictionary[lang];
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
