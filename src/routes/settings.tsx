@@ -122,7 +122,7 @@ function SettingsPage() {
         <section className="mx-auto w-full max-w-3xl rounded-lg border border-border bg-card p-6 sm:p-8">
         <div className="mb-6 flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Paramètres entreprise</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t.profileSettingsTitle}</h1>
             <p className="mt-1 text-sm text-muted-foreground">{t.profileSettingsSubtitle}</p>
           </div>
           <Button type="button" variant="outline" asChild>
