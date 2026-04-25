@@ -576,8 +576,8 @@ export function QuoteInvoiceApp({
 
       downloadPdf();
       toast.success(uiT.pdfDownloaded);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : uiT.pdfUnknownError;
+    } catch {
+      const message = uiT.pdfUnknownError;
       toast.error(message);
       window.alert(message);
     } finally {
@@ -1042,7 +1042,7 @@ export function QuoteInvoiceApp({
         >
           <header className="flex items-start justify-between gap-8">
             <div>
-              <p className="mb-8 text-6xl font-normal uppercase tracking-tight text-[#111111]">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
+              <p className="mb-8 text-6xl font-normal uppercase tracking-tight text-[#111111]">{docType === "devis" ? pdfT.quote : pdfT.invoice}</p>
             </div>
 
             <div className="flex min-h-32 min-w-40 flex-col items-end justify-start gap-4">
@@ -1056,7 +1056,7 @@ export function QuoteInvoiceApp({
 
               <div className="flex gap-2">
                 <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">
-                  {docType === "devis" ? t.quoteLabel : t.invoiceLabel} n°{formattedInvoiceNumber}
+                  {docType === "devis" ? pdfT.quote : pdfT.invoice} n°{formattedInvoiceNumber}
                 </span>
                 <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">{today}</span>
               </div>
@@ -1113,22 +1113,22 @@ export function QuoteInvoiceApp({
             {isVatEnabled ? (
                <div className="w-80 border-2 border-[#000000] bg-[#ffffff] p-3 text-right">
                 <div className="flex items-center justify-between text-[#111111]">
-                  <span className="text-sm font-bold">Total HT</span>
+                  <span className="text-sm font-bold">{pdfT.totalHt}</span>
                   <span className="text-sm font-bold">{formatCurrency(totalHT)}</span>
                 </div>
                 <div className="mt-1 flex items-center justify-between text-[#111111]">
-                  <span className="text-sm font-bold">TVA ({vatRate}%)</span>
+                  <span className="text-sm font-bold">{pdfT.totalVat} ({vatRate}%)</span>
                   <span className="text-sm font-bold">{formatCurrency(vatAmount)}</span>
                 </div>
                 <div className="mt-2 flex items-center justify-between bg-[#000000] p-3 text-[#ffffff]">
-                  <span className="text-sm font-black">Total TTC</span>
+                  <span className="text-sm font-black">{pdfT.totalTtc}</span>
                   <strong className="text-lg font-black">{formatCurrency(totalTTC)}</strong>
                 </div>
               </div>
             ) : (
               <div className="w-80 border-2 border-[#000000] bg-[#ffffff] p-3">
                 <div className="flex items-center justify-between bg-[#000000] p-3 text-[#ffffff]">
-                  <span className="text-sm font-black">Total Global</span>
+                  <span className="text-sm font-black">{pdfT.totalGlobal}</span>
                   <strong className="text-lg font-black">{formatCurrency(totalHT)}</strong>
                 </div>
               </div>
@@ -1136,12 +1136,12 @@ export function QuoteInvoiceApp({
           </div>
 
           <p className="mt-8 text-sm font-semibold uppercase italic text-[#111111]">
-            Arrêté le présent {docType === "devis" ? "DEVIS" : "FACTURE"} à la somme de : {amountInWords.toUpperCase()}.
+            {pdfT.closing} {docType === "devis" ? pdfT.quote : pdfT.invoice} {pdfT.sum} : {amountInWords.toUpperCase()}.
           </p>
 
           <footer className="mt-10">
             <hr className="mb-2 border-t border-[#111111]" />
-            <p className="text-xs font-bold text-[#111111]">Merci pour votre confiance</p>
+            <p className="text-xs font-bold text-[#111111]">{pdfT.thanks}</p>
           </footer>
         </div>
       </div>
