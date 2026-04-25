@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { uiDictionary } from "@/lib/ui-i18n";
 import { enqueueOfflineInvoice, saveInvoiceOnline, type InvoicePayload } from "@/lib/offline-invoice-sync";
 import type { UserProfile } from "@/lib/profile";
 import { useUiLanguage, type AppLanguage } from "@/lib/ui-language";
@@ -313,6 +314,7 @@ export function QuoteInvoiceApp({
   const isUiArabic = uiLanguage === "ar";
   const isInvoiceArabic = invoiceContentLanguage === "ar";
   const t = uiText[uiLanguage];
+  const uiT = uiDictionary[uiLanguage];
   const pdfT = invoicePdfText[invoiceContentLanguage];
   const canUseLocalStorage = typeof window !== "undefined";
 
@@ -437,8 +439,8 @@ export function QuoteInvoiceApp({
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)));
   };
 
-  const businessName = profile?.business_name?.trim() || "Votre entreprise";
-  const businessAddress = profile?.address?.trim() || "Adresse";
+  const businessName = profile?.business_name?.trim() || uiT.defaultBusinessName;
+  const businessAddress = profile?.address?.trim() || uiT.defaultBusinessAddress;
   const businessPhone = profile?.phone?.trim() || "-";
   const businessIce = profile?.ice_number?.trim() || "";
   const businessLogoUrl = profile?.logo_url?.trim() || "";
