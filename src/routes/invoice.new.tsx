@@ -7,6 +7,8 @@ import { QuoteInvoiceApp } from "@/components/quote-invoice-app";
 import { useAuth } from "@/lib/auth";
 import { syncOfflineInvoices } from "@/lib/offline-invoice-sync";
 import { fetchUserProfile, type UserProfile } from "@/lib/profile";
+import { uiDictionary } from "@/lib/ui-i18n";
+import { useUiLanguage } from "@/lib/ui-language";
 
 export const Route = createFileRoute("/invoice/new")({
   component: NewInvoicePage,
@@ -15,6 +17,8 @@ export const Route = createFileRoute("/invoice/new")({
 function NewInvoicePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { uiLanguage } = useUiLanguage();
+  const t = uiDictionary[uiLanguage];
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
@@ -23,9 +27,9 @@ function NewInvoicePage() {
     fetchUserProfile(user.id)
       .then((data) => setProfile(data))
       .catch(() => {
-        toast.error("Impossible de charger votre profil.");
+        toast.error(t.profileLoadError);
       });
-  }, [user]);
+  }, [t.profileLoadError, user]);
 
   useEffect(() => {
     if (!user || typeof window === "undefined") return;
@@ -34,7 +38,7 @@ function NewInvoicePage() {
       try {
         const { synced } = await syncOfflineInvoices();
         if (synced > 0) {
-          toast.success("Synchronisation réussie !");
+          toast.success(t.syncSuccess);
         }
       } catch {
         // keep queue for next retry
@@ -50,7 +54,7 @@ function NewInvoicePage() {
     return () => {
       window.removeEventListener("online", handleReconnect);
     };
-  }, [user]);
+  }, [t.syncSuccess, user]);
 
   if (!user) return null;
 
