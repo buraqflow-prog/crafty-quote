@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
+import { uiDictionary } from "@/lib/ui-i18n";
+import { useUiLanguage } from "@/lib/ui-language";
 
 type AuthMode = "login" | "signup";
 
@@ -15,20 +17,19 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const { user, isLoading, signIn, signUp } = useAuth();
+  const { uiLanguage } = useUiLanguage();
+  const t = uiDictionary[uiLanguage];
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
 
-  const title = mode === "login" ? "Se connecter" : "Créer un compte";
-  const subtitle = useMemo(
-    () => (mode === "login" ? "Accédez à votre espace de facturation." : "Créez votre compte artisan en quelques secondes."),
-    [mode],
-  );
+  const title = mode === "login" ? t.authLoginTitle : t.authSignupTitle;
+  const subtitle = useMemo(() => (mode === "login" ? t.authLoginSubtitle : t.authSignupSubtitle), [mode, t.authLoginSubtitle, t.authSignupSubtitle]);
 
   if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Chargement...</div>;
+    return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">{t.loading}</div>;
   }
 
   if (user) {
@@ -43,18 +44,18 @@ function AuthPage() {
     try {
       if (mode === "login") {
         await signIn(email.trim(), password);
-        toast.success("Connexion réussie");
+        toast.success(t.authLoginSuccess);
         return;
       }
 
       const { needsEmailVerification } = await signUp(email.trim(), password);
       if (needsEmailVerification) {
-        toast.success("Compte créé. Vérifiez votre email pour activer votre accès.");
+        toast.success(t.authSignupVerifySuccess);
       } else {
-        toast.success("Compte créé et connecté.");
+        toast.success(t.authSignupSuccess);
       }
     } catch (error) {
-      const message = normalizeAuthError(error);
+      const message = normalizeAuthError(error, t);
       setInlineError(message);
       toast.error(message);
     } finally {
@@ -66,10 +67,10 @@ function AuthPage() {
     <main className="min-h-screen bg-background px-4 py-10">
       <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-2">
         <section className="rounded-lg border border-border bg-card p-8">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Craftsman SaaS</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">Authentification sécurisée</h1>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t.authBrand}</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">{t.authTitle}</h1>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Gérez vos devis et factures en toute sécurité avec une expérience simple et professionnelle.
+            {t.authDescription}
           </p>
         </section>
 
@@ -85,7 +86,7 @@ function AuthPage() {
                 mode === "login" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
               }`}
             >
-              Se connecter
+              {t.authLogin}
             </button>
             <button
               type="button"
@@ -97,7 +98,7 @@ function AuthPage() {
                 mode === "signup" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
               }`}
             >
-              Créer un compte
+              {t.authSignup}
             </button>
           </div>
 
@@ -113,11 +114,11 @@ function AuthPage() {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Email</label>
+              <label className="text-sm font-medium text-foreground">{t.emailLabel}</label>
               <Input
                 type="email"
                 autoComplete="email"
-                placeholder="vous@exemple.com"
+                placeholder={t.emailPlaceholder}
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 required
@@ -125,11 +126,11 @@ function AuthPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Mot de passe</label>
+              <label className="text-sm font-medium text-foreground">{t.passwordLabel}</label>
               <Input
                 type="password"
                 autoComplete={mode === "login" ? "current-password" : "new-password"}
-                placeholder="••••••••"
+                placeholder={t.passwordPlaceholder}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 required
@@ -139,7 +140,7 @@ function AuthPage() {
 
             <Button type="submit" className="h-11 w-full" disabled={isSubmitting}>
               {isSubmitting ? <LoaderCircle className="animate-spin" /> : null}
-              {mode === "login" ? "Se connecter" : "Créer un compte"}
+              {mode === "login" ? t.authLogin : t.authSignup}
             </Button>
           </form>
         </section>
@@ -148,20 +149,24 @@ function AuthPage() {
   );
 }
 
-function normalizeAuthError(error: unknown) {
+function normalizeAuthError(error: unknown, t: ReturnType<typeof getDictionaryShape>) {
   const message = error instanceof Error ? error.message.toLowerCase() : "";
 
   if (message.includes("invalid login credentials")) {
-    return "Identifiants invalides.";
+    return t.authInvalidCreds;
   }
 
   if (message.includes("email not confirmed")) {
-    return "Veuillez confirmer votre email avant de vous connecter.";
+    return t.authEmailNotConfirmed;
   }
 
   if (message.includes("user already registered")) {
-    return "Cet email est déjà utilisé.";
+    return t.authEmailUsed;
   }
 
-  return "Une erreur est survenue. Veuillez réessayer.";
+  return t.authUnexpectedError;
+}
+
+function getDictionaryShape() {
+  return uiDictionary.fr;
 }
