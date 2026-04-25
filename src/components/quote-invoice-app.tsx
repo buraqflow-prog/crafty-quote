@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { uiDictionary } from "@/lib/ui-i18n";
 import { enqueueOfflineInvoice, saveInvoiceOnline, type InvoicePayload } from "@/lib/offline-invoice-sync";
 import type { UserProfile } from "@/lib/profile";
 import { useUiLanguage, type AppLanguage } from "@/lib/ui-language";
@@ -313,6 +314,7 @@ export function QuoteInvoiceApp({
   const isUiArabic = uiLanguage === "ar";
   const isInvoiceArabic = invoiceContentLanguage === "ar";
   const t = uiText[uiLanguage];
+  const uiT = uiDictionary[uiLanguage];
   const pdfT = invoicePdfText[invoiceContentLanguage];
   const canUseLocalStorage = typeof window !== "undefined";
 
@@ -437,8 +439,8 @@ export function QuoteInvoiceApp({
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)));
   };
 
-  const businessName = profile?.business_name?.trim() || "Votre entreprise";
-  const businessAddress = profile?.address?.trim() || "Adresse";
+  const businessName = profile?.business_name?.trim() || uiT.defaultBusinessName;
+  const businessAddress = profile?.address?.trim() || uiT.defaultBusinessAddress;
   const businessPhone = profile?.phone?.trim() || "-";
   const businessIce = profile?.ice_number?.trim() || "";
   const businessLogoUrl = profile?.logo_url?.trim() || "";
@@ -560,22 +562,22 @@ export function QuoteInvoiceApp({
         try {
           await navigator.share({
             files: [pdfFile],
-            title: docType === "devis" ? "DEVIS" : "FACTURE",
-            text: "Document PDF",
+            title: docType === "devis" ? pdfT.quote : pdfT.invoice,
+            text: "PDF",
           });
-          toast.success("PDF prêt à être partagé");
+          toast.success(uiT.pdfReadyShare);
           return;
         } catch {
           downloadPdf();
-          toast("Partage indisponible, téléchargement lancé.");
+          toast(uiT.shareUnavailableDownloadStarted);
           return;
         }
       }
 
       downloadPdf();
-      toast.success("PDF téléchargé");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Erreur inconnue pendant la génération du PDF.";
+      toast.success(uiT.pdfDownloaded);
+    } catch {
+      const message = uiT.pdfUnknownError;
       toast.error(message);
       window.alert(message);
     } finally {
@@ -587,7 +589,7 @@ export function QuoteInvoiceApp({
   };
 
   const sendWhatsApp = () => {
-    const title = docType === "devis" ? "DEVIS" : "FACTURE";
+    const title = docType === "devis" ? pdfT.quote : pdfT.invoice;
     const lines = items
       .filter((item) => item.description.trim())
       .map(
@@ -598,12 +600,12 @@ export function QuoteInvoiceApp({
 
     const message = [
       `${title} - ${today}`,
-      `Client: ${clientName || "-"}`,
-      `Téléphone client: ${clientPhone || "-"}`,
+      `${uiT.whatsappClient}: ${clientName || "-"}`,
+      `${uiT.whatsappClientPhone}: ${clientPhone || "-"}`,
       lines,
-      `Total HT: ${formatCurrency(totalHT)}`,
-      ...(isVatEnabled ? [`TVA (${vatRate}%): ${formatCurrency(vatAmount)}`] : []),
-      `Total: ${formatCurrency(totalTTC)}`,
+      `${pdfT.totalHt}: ${formatCurrency(totalHT)}`,
+      ...(isVatEnabled ? [`${pdfT.totalVat} (${vatRate}%): ${formatCurrency(vatAmount)}`] : []),
+      `${pdfT.total}: ${formatCurrency(totalTTC)}`,
     ]
       .filter(Boolean)
       .join("\n");
@@ -677,15 +679,15 @@ export function QuoteInvoiceApp({
 
       if (online) {
         await saveInvoiceOnline(userId, payload);
-        toast.success("Document enregistré avec succès");
+        toast.success(uiT.documentSavedSuccess);
       } else {
         if (typeof window !== "undefined") {
           enqueueOfflineInvoice(userId, payload);
         }
-        toast("Mode hors-ligne : document ajouté à la file locale.");
+        toast(uiT.offlineQueued);
       }
     } catch {
-      toast.error("Erreur lors de l'enregistrement du document");
+      toast.error(uiT.documentSaveError);
     } finally {
       setIsSavingInvoice(false);
     }
@@ -812,19 +814,19 @@ export function QuoteInvoiceApp({
         <div className="mt-6 grid gap-4 xl:grid-cols-12">
           <div className="space-y-4 xl:col-span-8">
             <div className="invoice-card">
-              <h2 className="invoice-section-title">Business Info</h2>
+              <h2 className="invoice-section-title">{uiT.businessInfoTitle}</h2>
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-1">
                   <p className="text-base font-semibold text-foreground">{businessName}</p>
                   <p className="whitespace-pre-line text-sm text-muted-foreground">{businessAddress}</p>
                   <p className="text-sm text-muted-foreground">{businessPhone}</p>
-                  {businessIce ? <p className="text-sm text-muted-foreground">ICE: {businessIce}</p> : null}
+                  {businessIce ? <p className="text-sm text-muted-foreground">{uiT.businessIceLabel}: {businessIce}</p> : null}
                 </div>
                 <div className="flex h-16 w-24 items-center justify-center rounded-md border border-border bg-background">
                   {businessLogoUrl ? (
-                    <img src={businessLogoUrl} alt="Logo entreprise" className="h-full w-full rounded-md object-contain" loading="lazy" />
+                    <img src={businessLogoUrl} alt={uiT.profileLogoAlt} className="h-full w-full rounded-md object-contain" loading="lazy" />
                   ) : (
-                    <span className="text-xs text-muted-foreground">Logo</span>
+                    <span className="text-xs text-muted-foreground">{uiT.logoFallback}</span>
                   )}
                 </div>
               </div>
@@ -1040,21 +1042,21 @@ export function QuoteInvoiceApp({
         >
           <header className="flex items-start justify-between gap-8">
             <div>
-              <p className="mb-8 text-6xl font-normal uppercase tracking-tight text-[#111111]">{docType === "devis" ? "DEVIS" : "FACTURE"}</p>
+              <p className="mb-8 text-6xl font-normal uppercase tracking-tight text-[#111111]">{docType === "devis" ? pdfT.quote : pdfT.invoice}</p>
             </div>
 
             <div className="flex min-h-32 min-w-40 flex-col items-end justify-start gap-4">
               {businessLogoUrl ? (
-                <img src={businessLogoUrl} alt="Logo" className="h-32 w-auto object-contain" />
+                <img src={businessLogoUrl} alt={uiT.pdfLogoAlt} className="h-32 w-auto object-contain" />
               ) : (
                 <div className="flex h-32 w-40 items-center justify-center rounded-full border border-[#111111] text-xs font-medium text-[#111111]">
-                  LOGO
+                  {uiT.logoFallback}
                 </div>
               )}
 
               <div className="flex gap-2">
                 <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">
-                  {docType === "devis" ? "Devis" : "Facture"} n°{formattedInvoiceNumber}
+                  {docType === "devis" ? pdfT.quote : pdfT.invoice} n°{formattedInvoiceNumber}
                 </span>
                 <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">{today}</span>
               </div>
@@ -1065,34 +1067,34 @@ export function QuoteInvoiceApp({
 
           <section className="mb-8 grid grid-cols-2 gap-6">
             <div className="border border-[#000000] bg-[#ffffff] p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">Émetteur</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">{pdfT.emitter}</p>
               <p className="mt-2 text-sm font-bold uppercase text-[#111111]">{businessName}</p>
               <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-[#111111]">{businessAddress}</p>
               <p className="mt-1 text-sm text-[#111111]">{businessPhone}</p>
-              {businessIce ? <p className="mt-1 text-sm text-[#111111]">ICE: {businessIce}</p> : null}
+              {businessIce ? <p className="mt-1 text-sm text-[#111111]">{uiT.businessIceLabel}: {businessIce}</p> : null}
             </div>
 
             <div className="border border-[#000000] bg-[#ffffff] p-4 text-right">
-              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">Client</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">{pdfT.client}</p>
               <p className="mt-2 text-sm font-bold uppercase text-[#111111]">{clientName || "-"}</p>
               <p className="mt-1 text-sm text-[#111111]">{clientPhone || "-"}</p>
               {clientAddress.trim() && <p className="mt-1 text-sm leading-relaxed text-[#111111]">{clientAddress}</p>}
-              {clientIce.trim() && <p className="mt-1 text-sm text-[#111111]">ICE : {clientIce}</p>}
+              {clientIce.trim() && <p className="mt-1 text-sm text-[#111111]">{uiT.businessIceLabel} : {clientIce}</p>}
             </div>
           </section>
 
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs font-black uppercase tracking-[0.08em] text-[#111111]">Détail des prestations</p>
-            <p className="text-xs font-medium text-[#111111]">{items.length} ligne(s)</p>
+            <p className="text-xs font-black uppercase tracking-[0.08em] text-[#111111]">{pdfT.details}</p>
+            <p className="text-xs font-medium text-[#111111]">{items.length} {pdfT.lines}</p>
           </div>
 
           <table className="w-full border-collapse border-[4px] border-[#000000]">
             <thead>
               <tr className="bg-[#000000] text-[#ffffff]">
-                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">Description</th>
-                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">Prix</th>
-                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">Quantité</th>
-                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">Total</th>
+                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">{pdfT.description}</th>
+                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">{pdfT.price}</th>
+                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">{pdfT.quantity}</th>
+                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">{pdfT.total}</th>
               </tr>
             </thead>
             <tbody>
@@ -1111,22 +1113,22 @@ export function QuoteInvoiceApp({
             {isVatEnabled ? (
                <div className="w-80 border-2 border-[#000000] bg-[#ffffff] p-3 text-right">
                 <div className="flex items-center justify-between text-[#111111]">
-                  <span className="text-sm font-bold">Total HT</span>
+                  <span className="text-sm font-bold">{pdfT.totalHt}</span>
                   <span className="text-sm font-bold">{formatCurrency(totalHT)}</span>
                 </div>
                 <div className="mt-1 flex items-center justify-between text-[#111111]">
-                  <span className="text-sm font-bold">TVA ({vatRate}%)</span>
+                  <span className="text-sm font-bold">{pdfT.totalVat} ({vatRate}%)</span>
                   <span className="text-sm font-bold">{formatCurrency(vatAmount)}</span>
                 </div>
                 <div className="mt-2 flex items-center justify-between bg-[#000000] p-3 text-[#ffffff]">
-                  <span className="text-sm font-black">Total TTC</span>
+                  <span className="text-sm font-black">{pdfT.totalTtc}</span>
                   <strong className="text-lg font-black">{formatCurrency(totalTTC)}</strong>
                 </div>
               </div>
             ) : (
               <div className="w-80 border-2 border-[#000000] bg-[#ffffff] p-3">
                 <div className="flex items-center justify-between bg-[#000000] p-3 text-[#ffffff]">
-                  <span className="text-sm font-black">Total Global</span>
+                  <span className="text-sm font-black">{pdfT.totalGlobal}</span>
                   <strong className="text-lg font-black">{formatCurrency(totalHT)}</strong>
                 </div>
               </div>
@@ -1134,12 +1136,12 @@ export function QuoteInvoiceApp({
           </div>
 
           <p className="mt-8 text-sm font-semibold uppercase italic text-[#111111]">
-            Arrêté le présent {docType === "devis" ? "DEVIS" : "FACTURE"} à la somme de : {amountInWords.toUpperCase()}.
+            {pdfT.closing} {docType === "devis" ? pdfT.quote : pdfT.invoice} {pdfT.sum} : {amountInWords.toUpperCase()}.
           </p>
 
           <footer className="mt-10">
             <hr className="mb-2 border-t border-[#111111]" />
-            <p className="text-xs font-bold text-[#111111]">Merci pour votre confiance</p>
+            <p className="text-xs font-bold text-[#111111]">{pdfT.thanks}</p>
           </footer>
         </div>
       </div>
