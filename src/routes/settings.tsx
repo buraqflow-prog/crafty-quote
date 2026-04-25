@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth";
 import { fetchUserProfile, profileInputSchema, upsertUserProfile, uploadProfileLogo } from "@/lib/profile";
+import { uiDictionary } from "@/lib/ui-i18n";
+import { useUiLanguage } from "@/lib/ui-language";
 
 export const Route = createFileRoute("/settings")({
   component: SettingsPage,
@@ -32,6 +34,8 @@ const emptyForm: SettingsFormState = {
 
 function SettingsPage() {
   const { user } = useAuth();
+  const { uiLanguage } = useUiLanguage();
+  const t = uiDictionary[uiLanguage];
   const [form, setForm] = useState<SettingsFormState>(emptyForm);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -62,12 +66,12 @@ function SettingsPage() {
       })
       .catch((error) => {
         console.error(error);
-        toast.error("Impossible de charger votre profil.");
+        toast.error(t.profileLoadError);
       })
       .finally(() => {
         setIsProfileLoading(false);
       });
-  }, [user]);
+  }, [t.profileLoadError, user]);
 
   const isBusy = isSaving || isUploadingLogo;
 
@@ -85,9 +89,9 @@ function SettingsPage() {
     try {
       const publicUrl = await uploadProfileLogo(user.id, file);
       setForm((prev) => ({ ...prev, logo_url: publicUrl }));
-      toast.success("Logo téléversé avec succès.");
+      toast.success(t.profileUploadSuccess);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Échec du téléversement du logo.";
+      const message = error instanceof Error ? error.message : t.profileUploadError;
       toast.error(message);
     } finally {
       setIsUploadingLogo(false);
@@ -97,16 +101,16 @@ function SettingsPage() {
   const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (hasValidationErrors) {
-      toast.error("Veuillez vérifier les champs du formulaire.");
+      toast.error(t.profileValidationError);
       return;
     }
 
     setIsSaving(true);
     try {
       await upsertUserProfile(user.id, form);
-      toast.success("Profil mis à jour.");
+      toast.success(t.profileSaveSuccess);
     } catch {
-      toast.error("Impossible de sauvegarder le profil.");
+      toast.error(t.profileSaveError);
     } finally {
       setIsSaving(false);
     }
@@ -119,53 +123,53 @@ function SettingsPage() {
         <div className="mb-6 flex items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">Paramètres entreprise</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Gérez les informations utilisées dans vos devis et factures.</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t.profileSettingsSubtitle}</p>
           </div>
           <Button type="button" variant="outline" asChild>
-            <Link to="/dashboard">Retour</Link>
+            <Link to="/dashboard">{t.back}</Link>
           </Button>
         </div>
 
         {isProfileLoading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <LoaderCircle className="h-4 w-4 animate-spin" />
-            Chargement du profil...
+            {t.loadingProfile}
           </div>
         ) : (
           <form onSubmit={handleSave} className="space-y-4">
-            <Field label="Nom de l'entreprise">
+            <Field label={t.companyName}>
               <Input
                 value={form.business_name}
                 onChange={(event) => setForm((prev) => ({ ...prev, business_name: event.target.value }))}
-                placeholder="Atelier Exemple"
+                placeholder={t.companyNamePlaceholder}
               />
             </Field>
 
-            <Field label="Téléphone">
+            <Field label={t.phone}>
               <Input
                 value={form.phone}
                 onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
-                placeholder="06XXXXXXXX"
+                placeholder={t.phonePlaceholder}
               />
             </Field>
 
-            <Field label="Adresse">
+            <Field label={t.address}>
               <Textarea
                 value={form.address}
                 onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))}
-                placeholder="Adresse complète"
+                placeholder={t.addressPlaceholder}
               />
             </Field>
 
-            <Field label="ICE">
+            <Field label={t.ice}>
               <Input
                 value={form.ice_number}
                 onChange={(event) => setForm((prev) => ({ ...prev, ice_number: event.target.value }))}
-                placeholder="Numéro ICE"
+                placeholder={t.icePlaceholder}
               />
             </Field>
 
-            <Field label="Logo entreprise">
+            <Field label={t.logoCompany}>
               <div className="space-y-3 rounded-md border border-border p-3">
                 <Input
                   type="file"
@@ -180,31 +184,31 @@ function SettingsPage() {
                 {isUploadingLogo ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <LoaderCircle className="h-4 w-4 animate-spin" />
-                    Téléversement en cours...
+                    {t.uploadInProgress}
                   </div>
                 ) : null}
 
                 {form.logo_url ? (
                   <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-2">
-                    <img src={form.logo_url} alt="Logo entreprise" className="h-14 w-20 rounded object-contain" loading="lazy" />
+                    <img src={form.logo_url} alt={t.profileLogoAlt} className="h-14 w-20 rounded object-contain" loading="lazy" />
                     <Button
                       type="button"
                       variant="ghost"
                       onClick={() => setForm((prev) => ({ ...prev, logo_url: "" }))}
                       disabled={isBusy}
                     >
-                      Retirer
+                      {t.remove}
                     </Button>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Aucun logo défini.</p>
+                  <p className="text-sm text-muted-foreground">{t.noLogo}</p>
                 )}
               </div>
             </Field>
 
             <Button type="submit" className="h-11 w-full" disabled={isBusy || hasValidationErrors}>
               {isSaving ? <LoaderCircle className="animate-spin" /> : <Upload />}
-              Enregistrer les modifications
+              {t.saveChanges}
             </Button>
           </form>
         )}
