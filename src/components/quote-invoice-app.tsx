@@ -814,19 +814,19 @@ export function QuoteInvoiceApp({
         <div className="mt-6 grid gap-4 xl:grid-cols-12">
           <div className="space-y-4 xl:col-span-8">
             <div className="invoice-card">
-              <h2 className="invoice-section-title">Business Info</h2>
+              <h2 className="invoice-section-title">{uiT.businessInfoTitle}</h2>
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-1">
                   <p className="text-base font-semibold text-foreground">{businessName}</p>
                   <p className="whitespace-pre-line text-sm text-muted-foreground">{businessAddress}</p>
                   <p className="text-sm text-muted-foreground">{businessPhone}</p>
-                  {businessIce ? <p className="text-sm text-muted-foreground">ICE: {businessIce}</p> : null}
+                  {businessIce ? <p className="text-sm text-muted-foreground">{uiT.businessIceLabel}: {businessIce}</p> : null}
                 </div>
                 <div className="flex h-16 w-24 items-center justify-center rounded-md border border-border bg-background">
                   {businessLogoUrl ? (
-                    <img src={businessLogoUrl} alt="Logo entreprise" className="h-full w-full rounded-md object-contain" loading="lazy" />
+                    <img src={businessLogoUrl} alt={uiT.profileLogoAlt} className="h-full w-full rounded-md object-contain" loading="lazy" />
                   ) : (
-                    <span className="text-xs text-muted-foreground">Logo</span>
+                    <span className="text-xs text-muted-foreground">{uiT.logoFallback}</span>
                   )}
                 </div>
               </div>
@@ -1047,16 +1047,16 @@ export function QuoteInvoiceApp({
 
             <div className="flex min-h-32 min-w-40 flex-col items-end justify-start gap-4">
               {businessLogoUrl ? (
-                <img src={businessLogoUrl} alt="Logo" className="h-32 w-auto object-contain" />
+                <img src={businessLogoUrl} alt={uiT.pdfLogoAlt} className="h-32 w-auto object-contain" />
               ) : (
                 <div className="flex h-32 w-40 items-center justify-center rounded-full border border-[#111111] text-xs font-medium text-[#111111]">
-                  LOGO
+                  {uiT.logoFallback}
                 </div>
               )}
 
               <div className="flex gap-2">
                 <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">
-                  {docType === "devis" ? "Devis" : "Facture"} n°{formattedInvoiceNumber}
+                  {docType === "devis" ? t.quoteLabel : t.invoiceLabel} n°{formattedInvoiceNumber}
                 </span>
                 <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">{today}</span>
               </div>
@@ -1067,34 +1067,34 @@ export function QuoteInvoiceApp({
 
           <section className="mb-8 grid grid-cols-2 gap-6">
             <div className="border border-[#000000] bg-[#ffffff] p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">Émetteur</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">{pdfT.emitter}</p>
               <p className="mt-2 text-sm font-bold uppercase text-[#111111]">{businessName}</p>
               <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-[#111111]">{businessAddress}</p>
               <p className="mt-1 text-sm text-[#111111]">{businessPhone}</p>
-              {businessIce ? <p className="mt-1 text-sm text-[#111111]">ICE: {businessIce}</p> : null}
+              {businessIce ? <p className="mt-1 text-sm text-[#111111]">{uiT.businessIceLabel}: {businessIce}</p> : null}
             </div>
 
             <div className="border border-[#000000] bg-[#ffffff] p-4 text-right">
-              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">Client</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">{pdfT.client}</p>
               <p className="mt-2 text-sm font-bold uppercase text-[#111111]">{clientName || "-"}</p>
               <p className="mt-1 text-sm text-[#111111]">{clientPhone || "-"}</p>
               {clientAddress.trim() && <p className="mt-1 text-sm leading-relaxed text-[#111111]">{clientAddress}</p>}
-              {clientIce.trim() && <p className="mt-1 text-sm text-[#111111]">ICE : {clientIce}</p>}
+              {clientIce.trim() && <p className="mt-1 text-sm text-[#111111]">{uiT.businessIceLabel} : {clientIce}</p>}
             </div>
           </section>
 
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs font-black uppercase tracking-[0.08em] text-[#111111]">Détail des prestations</p>
-            <p className="text-xs font-medium text-[#111111]">{items.length} ligne(s)</p>
+            <p className="text-xs font-black uppercase tracking-[0.08em] text-[#111111]">{pdfT.details}</p>
+            <p className="text-xs font-medium text-[#111111]">{items.length} {pdfT.lines}</p>
           </div>
 
           <table className="w-full border-collapse border-[4px] border-[#000000]">
             <thead>
               <tr className="bg-[#000000] text-[#ffffff]">
-                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">Description</th>
-                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">Prix</th>
-                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">Quantité</th>
-                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">Total</th>
+                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">{pdfT.description}</th>
+                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">{pdfT.price}</th>
+                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">{pdfT.quantity}</th>
+                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">{pdfT.total}</th>
               </tr>
             </thead>
             <tbody>
