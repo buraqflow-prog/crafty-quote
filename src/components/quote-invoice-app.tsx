@@ -562,22 +562,22 @@ export function QuoteInvoiceApp({
         try {
           await navigator.share({
             files: [pdfFile],
-            title: docType === "devis" ? "DEVIS" : "FACTURE",
-            text: "Document PDF",
+            title: docType === "devis" ? pdfT.quote : pdfT.invoice,
+            text: "PDF",
           });
-          toast.success("PDF prêt à être partagé");
+          toast.success(uiT.pdfReadyShare);
           return;
         } catch {
           downloadPdf();
-          toast("Partage indisponible, téléchargement lancé.");
+          toast(uiT.shareUnavailableDownloadStarted);
           return;
         }
       }
 
       downloadPdf();
-      toast.success("PDF téléchargé");
+      toast.success(uiT.pdfDownloaded);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Erreur inconnue pendant la génération du PDF.";
+      const message = error instanceof Error ? error.message : uiT.pdfUnknownError;
       toast.error(message);
       window.alert(message);
     } finally {
@@ -589,7 +589,7 @@ export function QuoteInvoiceApp({
   };
 
   const sendWhatsApp = () => {
-    const title = docType === "devis" ? "DEVIS" : "FACTURE";
+    const title = docType === "devis" ? pdfT.quote : pdfT.invoice;
     const lines = items
       .filter((item) => item.description.trim())
       .map(
@@ -600,12 +600,12 @@ export function QuoteInvoiceApp({
 
     const message = [
       `${title} - ${today}`,
-      `Client: ${clientName || "-"}`,
-      `Téléphone client: ${clientPhone || "-"}`,
+      `${uiT.whatsappClient}: ${clientName || "-"}`,
+      `${uiT.whatsappClientPhone}: ${clientPhone || "-"}`,
       lines,
-      `Total HT: ${formatCurrency(totalHT)}`,
-      ...(isVatEnabled ? [`TVA (${vatRate}%): ${formatCurrency(vatAmount)}`] : []),
-      `Total: ${formatCurrency(totalTTC)}`,
+      `${pdfT.totalHt}: ${formatCurrency(totalHT)}`,
+      ...(isVatEnabled ? [`${pdfT.totalVat} (${vatRate}%): ${formatCurrency(vatAmount)}`] : []),
+      `${pdfT.total}: ${formatCurrency(totalTTC)}`,
     ]
       .filter(Boolean)
       .join("\n");
@@ -679,15 +679,15 @@ export function QuoteInvoiceApp({
 
       if (online) {
         await saveInvoiceOnline(userId, payload);
-        toast.success("Document enregistré avec succès");
+        toast.success(uiT.documentSavedSuccess);
       } else {
         if (typeof window !== "undefined") {
           enqueueOfflineInvoice(userId, payload);
         }
-        toast("Mode hors-ligne : document ajouté à la file locale.");
+        toast(uiT.offlineQueued);
       }
     } catch {
-      toast.error("Erreur lors de l'enregistrement du document");
+      toast.error(uiT.documentSaveError);
     } finally {
       setIsSavingInvoice(false);
     }
