@@ -54,6 +54,53 @@ export const uiDictionary: Record<
     logoCompany: string;
     remove: string;
     uploadInProgress: string;
+    syncSuccess: string;
+    businessInfoTitle: string;
+    businessIceLabel: string;
+    logoFallback: string;
+    profileLogoAlt: string;
+    pdfLogoAlt: string;
+    defaultBusinessName: string;
+    defaultBusinessAddress: string;
+    pdfReadyShare: string;
+    pdfDownloaded: string;
+    shareUnavailableDownloadStarted: string;
+    pdfUnknownError: string;
+    documentSavedSuccess: string;
+    offlineQueued: string;
+    documentSaveError: string;
+    whatsappClient: string;
+    whatsappClientPhone: string;
+    authBrand: string;
+    authTitle: string;
+    authDescription: string;
+    authLogin: string;
+    authSignup: string;
+    authLoginTitle: string;
+    authSignupTitle: string;
+    authLoginSubtitle: string;
+    authSignupSubtitle: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    passwordLabel: string;
+    passwordPlaceholder: string;
+    authLoginSuccess: string;
+    authSignupVerifySuccess: string;
+    authSignupSuccess: string;
+    authInvalidCreds: string;
+    authEmailNotConfirmed: string;
+    authEmailUsed: string;
+    authUnexpectedError: string;
+    pageNotFoundTitle: string;
+    pageNotFoundDescription: string;
+    goHome: string;
+    somethingWrong: string;
+    unexpectedErrorTryAgain: string;
+    tryAgain: string;
+    companyNamePlaceholder: string;
+    phonePlaceholder: string;
+    addressPlaceholder: string;
+    icePlaceholder: string;
   }
 > = {
   fr: {
@@ -108,6 +155,53 @@ export const uiDictionary: Record<
     logoCompany: "Logo entreprise",
     remove: "Retirer",
     uploadInProgress: "Téléversement en cours...",
+    syncSuccess: "Synchronisation réussie !",
+    businessInfoTitle: "Informations entreprise",
+    businessIceLabel: "ICE",
+    logoFallback: "Logo",
+    profileLogoAlt: "Logo entreprise",
+    pdfLogoAlt: "Logo",
+    defaultBusinessName: "Votre entreprise",
+    defaultBusinessAddress: "Adresse",
+    pdfReadyShare: "PDF prêt à être partagé",
+    pdfDownloaded: "PDF téléchargé",
+    shareUnavailableDownloadStarted: "Partage indisponible, téléchargement lancé.",
+    pdfUnknownError: "Erreur inconnue pendant la génération du PDF.",
+    documentSavedSuccess: "Document enregistré avec succès",
+    offlineQueued: "Mode hors-ligne : document ajouté à la file locale.",
+    documentSaveError: "Erreur lors de l'enregistrement du document",
+    whatsappClient: "Client",
+    whatsappClientPhone: "Téléphone client",
+    authBrand: "Craftsman SaaS",
+    authTitle: "Authentification sécurisée",
+    authDescription: "Gérez vos devis et factures en toute sécurité avec une expérience simple et professionnelle.",
+    authLogin: "Se connecter",
+    authSignup: "Créer un compte",
+    authLoginTitle: "Se connecter",
+    authSignupTitle: "Créer un compte",
+    authLoginSubtitle: "Accédez à votre espace de facturation.",
+    authSignupSubtitle: "Créez votre compte artisan en quelques secondes.",
+    emailLabel: "Email",
+    emailPlaceholder: "vous@exemple.com",
+    passwordLabel: "Mot de passe",
+    passwordPlaceholder: "••••••••",
+    authLoginSuccess: "Connexion réussie",
+    authSignupVerifySuccess: "Compte créé. Vérifiez votre email pour activer votre accès.",
+    authSignupSuccess: "Compte créé et connecté.",
+    authInvalidCreds: "Identifiants invalides.",
+    authEmailNotConfirmed: "Veuillez confirmer votre email avant de vous connecter.",
+    authEmailUsed: "Cet email est déjà utilisé.",
+    authUnexpectedError: "Une erreur est survenue. Veuillez réessayer.",
+    pageNotFoundTitle: "Page non trouvée",
+    pageNotFoundDescription: "La page recherchée n'existe pas ou a été déplacée.",
+    goHome: "Accueil",
+    somethingWrong: "Une erreur est survenue",
+    unexpectedErrorTryAgain: "Une erreur inattendue est survenue. Veuillez réessayer.",
+    tryAgain: "Réessayer",
+    companyNamePlaceholder: "Atelier Exemple",
+    phonePlaceholder: "06XXXXXXXX",
+    addressPlaceholder: "Adresse complète",
+    icePlaceholder: "Numéro ICE",
   },
   ar: {
     navDashboard: "لوحة التحكم",
@@ -161,6 +255,53 @@ export const uiDictionary: Record<
     logoCompany: "شعار الشركة",
     remove: "إزالة",
     uploadInProgress: "جاري الرفع...",
+    syncSuccess: "تمت المزامنة بنجاح!",
+    businessInfoTitle: "معلومات الشركة",
+    businessIceLabel: "ICE",
+    logoFallback: "الشعار",
+    profileLogoAlt: "شعار الشركة",
+    pdfLogoAlt: "الشعار",
+    defaultBusinessName: "شركتك",
+    defaultBusinessAddress: "العنوان",
+    pdfReadyShare: "ملف PDF جاهز للمشاركة",
+    pdfDownloaded: "تم تنزيل PDF",
+    shareUnavailableDownloadStarted: "المشاركة غير متاحة، تم بدء التنزيل.",
+    pdfUnknownError: "خطأ غير معروف أثناء إنشاء ملف PDF.",
+    documentSavedSuccess: "تم حفظ المستند بنجاح",
+    offlineQueued: "وضع عدم الاتصال: تمت إضافة المستند إلى الطابور المحلي.",
+    documentSaveError: "حدث خطأ أثناء حفظ المستند",
+    whatsappClient: "العميل",
+    whatsappClientPhone: "هاتف العميل",
+    authBrand: "Craftsman SaaS",
+    authTitle: "مصادقة آمنة",
+    authDescription: "أدر عروض الأسعار والفواتير بأمان عبر تجربة بسيطة واحترافية.",
+    authLogin: "تسجيل الدخول",
+    authSignup: "إنشاء حساب",
+    authLoginTitle: "تسجيل الدخول",
+    authSignupTitle: "إنشاء حساب",
+    authLoginSubtitle: "ادخل إلى مساحة الفوترة الخاصة بك.",
+    authSignupSubtitle: "أنشئ حساب الحرفي الخاص بك في ثوانٍ.",
+    emailLabel: "البريد الإلكتروني",
+    emailPlaceholder: "you@example.com",
+    passwordLabel: "كلمة المرور",
+    passwordPlaceholder: "••••••••",
+    authLoginSuccess: "تم تسجيل الدخول بنجاح",
+    authSignupVerifySuccess: "تم إنشاء الحساب. تحقّق من بريدك الإلكتروني لتفعيل الوصول.",
+    authSignupSuccess: "تم إنشاء الحساب وتسجيل الدخول.",
+    authInvalidCreds: "بيانات الدخول غير صحيحة.",
+    authEmailNotConfirmed: "يرجى تأكيد بريدك الإلكتروني قبل تسجيل الدخول.",
+    authEmailUsed: "هذا البريد الإلكتروني مستخدم بالفعل.",
+    authUnexpectedError: "حدث خطأ. يرجى المحاولة مرة أخرى.",
+    pageNotFoundTitle: "الصفحة غير موجودة",
+    pageNotFoundDescription: "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+    goHome: "الصفحة الرئيسية",
+    somethingWrong: "حدث خطأ ما",
+    unexpectedErrorTryAgain: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+    tryAgain: "أعد المحاولة",
+    companyNamePlaceholder: "ورشة مثال",
+    phonePlaceholder: "06XXXXXXXX",
+    addressPlaceholder: "العنوان الكامل",
+    icePlaceholder: "رقم ICE",
   },
   en: {
     navDashboard: "Dashboard",
@@ -214,5 +355,52 @@ export const uiDictionary: Record<
     logoCompany: "Company logo",
     remove: "Remove",
     uploadInProgress: "Uploading...",
+    syncSuccess: "Sync completed successfully!",
+    businessInfoTitle: "Business info",
+    businessIceLabel: "ICE",
+    logoFallback: "Logo",
+    profileLogoAlt: "Company logo",
+    pdfLogoAlt: "Logo",
+    defaultBusinessName: "Your business",
+    defaultBusinessAddress: "Address",
+    pdfReadyShare: "PDF ready to share",
+    pdfDownloaded: "PDF downloaded",
+    shareUnavailableDownloadStarted: "Sharing unavailable, download started.",
+    pdfUnknownError: "Unknown error while generating the PDF.",
+    documentSavedSuccess: "Document saved successfully",
+    offlineQueued: "Offline mode: document added to local queue.",
+    documentSaveError: "Error while saving the document",
+    whatsappClient: "Client",
+    whatsappClientPhone: "Client phone",
+    authBrand: "Craftsman SaaS",
+    authTitle: "Secure authentication",
+    authDescription: "Manage your quotes and invoices securely with a simple, professional experience.",
+    authLogin: "Sign in",
+    authSignup: "Create account",
+    authLoginTitle: "Sign in",
+    authSignupTitle: "Create account",
+    authLoginSubtitle: "Access your billing workspace.",
+    authSignupSubtitle: "Create your artisan account in seconds.",
+    emailLabel: "Email",
+    emailPlaceholder: "you@example.com",
+    passwordLabel: "Password",
+    passwordPlaceholder: "••••••••",
+    authLoginSuccess: "Signed in successfully",
+    authSignupVerifySuccess: "Account created. Check your email to activate access.",
+    authSignupSuccess: "Account created and signed in.",
+    authInvalidCreds: "Invalid credentials.",
+    authEmailNotConfirmed: "Please confirm your email before signing in.",
+    authEmailUsed: "This email is already in use.",
+    authUnexpectedError: "An error occurred. Please try again.",
+    pageNotFoundTitle: "Page not found",
+    pageNotFoundDescription: "The page you're looking for doesn't exist or has been moved.",
+    goHome: "Go home",
+    somethingWrong: "Something went wrong",
+    unexpectedErrorTryAgain: "An unexpected error occurred. Please try again.",
+    tryAgain: "Try again",
+    companyNamePlaceholder: "Sample Workshop",
+    phonePlaceholder: "06XXXXXXXX",
+    addressPlaceholder: "Full address",
+    icePlaceholder: "ICE number",
   },
 };
