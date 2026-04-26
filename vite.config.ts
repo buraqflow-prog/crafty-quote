@@ -8,6 +8,13 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
+  cloudflare: false,
+  tanstackStart: {
+    target: "static",
+    spa: {
+      enabled: true,
+    },
+  },
   vite: {
     plugins: [
       VitePWA({
