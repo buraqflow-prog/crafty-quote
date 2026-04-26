@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Save, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
@@ -41,6 +41,19 @@ type InvoiceDraft = {
   items: InvoiceItem[];
   isVatEnabled: boolean;
   vatRate: number;
+};
+
+type InvoiceItemRowProps = {
+  item: InvoiceItem;
+  index: number;
+  canDelete: boolean;
+  descriptionPlaceholder: string;
+  subtotalLabel: string;
+  deleteLabel: string;
+  quantityLabel: string;
+  unitPriceLabel: string;
+  onUpdate: (id: string, patch: Partial<InvoiceItem>) => void;
+  onRemove: (id: string) => void;
 };
 
 const invoicePdfText = {
@@ -410,9 +423,17 @@ export function QuoteInvoiceApp({
     });
   };
 
-  const updateItem = (id: string, patch: Partial<InvoiceItem>) => {
+  const updateItem = useCallback((id: string, patch: Partial<InvoiceItem>) => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)));
-  };
+  }, []);
+
+  const addItem = useCallback(() => {
+    setItems((prev) => [...prev, createItem()]);
+  }, []);
+
+  const removeItem = useCallback((id: string) => {
+    setItems((prev) => prev.filter((line) => line.id !== id));
+  }, []);
 
   const businessName = profile?.business_name?.trim() || uiT.defaultBusinessName;
   const businessAddress = profile?.address?.trim() || uiT.defaultBusinessAddress;
@@ -747,7 +768,7 @@ export function QuoteInvoiceApp({
             <div className="invoice-card">
               <div className="flex items-center justify-between gap-3">
                 <h2 className="invoice-section-title">{t.itemsTitle}</h2>
-                <Button type="button" variant="outline" size="sm" onClick={() => setItems((prev) => [...prev, createItem()])}>
+                <Button type="button" variant="outline" size="sm" onClick={addItem}>
                   <Plus /> {t.addLine}
                 </Button>
               </div>
@@ -762,75 +783,21 @@ export function QuoteInvoiceApp({
                 </div>
 
                 <div className="divide-y divide-border">
-                  {items.map((item, index) => {
-                    const lineTotal = item.quantity * item.unitPrice;
-                    return (
-                      <div key={item.id} className="grid grid-cols-1 gap-3 bg-background p-3 md:grid-cols-12 md:items-center md:gap-2">
-                        <div className="flex items-center justify-between md:col-span-1 md:justify-center">
-                          <span className="text-sm font-semibold text-foreground">{index + 1}</span>
-                          {items.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setItems((prev) => prev.filter((line) => line.id !== item.id))}
-                              aria-label={t.deleteLine}
-                              className="h-8 w-8 md:hidden"
-                            >
-                              <Trash2 />
-                            </Button>
-                          )}
-                        </div>
-
-                        <div className="md:col-span-5">
-                          <Input
-                            value={item.description}
-                            onChange={(e) => updateItem(item.id, { description: e.target.value })}
-                            placeholder={t.descriptionPlaceholder}
-                          />
-                        </div>
-
-                        <div className="md:col-span-2">
-                          <Input
-                            type="number"
-                            min={1}
-                            value={item.quantity}
-                            onChange={(e) => updateItem(item.id, { quantity: Math.max(1, Number(e.target.value) || 1) })}
-                          />
-                        </div>
-
-                        <div className="md:col-span-2">
-                          <Input
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            value={item.unitPrice}
-                            onChange={(e) => updateItem(item.id, { unitPrice: Math.max(0, Number(e.target.value) || 0) })}
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between rounded-md border border-border bg-surface-soft px-3 py-2 md:col-span-2 md:justify-center">
-                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground md:hidden">{t.subtotalLabel}</p>
-                          <p className="text-sm font-semibold text-foreground">{formatCurrency(lineTotal)}</p>
-                        </div>
-
-                        {items.length > 1 && (
-                          <div className="hidden md:col-span-12 md:flex md:justify-end">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setItems((prev) => prev.filter((line) => line.id !== item.id))}
-                              aria-label={t.deleteLine}
-                              className="h-8"
-                            >
-                              <Trash2 />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                  {items.map((item, index) => (
+                    <InvoiceItemRow
+                      key={item.id}
+                      item={item}
+                      index={index}
+                      canDelete={items.length > 1}
+                      descriptionPlaceholder={t.descriptionPlaceholder}
+                      subtotalLabel={t.subtotalLabel}
+                      deleteLabel={t.deleteLine}
+                      quantityLabel={t.quantityLabel}
+                      unitPriceLabel={t.unitPriceLabel}
+                      onUpdate={updateItem}
+                      onRemove={removeItem}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
