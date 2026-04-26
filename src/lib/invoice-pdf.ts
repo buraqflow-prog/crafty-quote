@@ -91,11 +91,21 @@ function formatMad(amount: number) {
 }
 
 function formatDate(value: string) {
+  const normalized = value.trim();
+  const slashDateMatch = normalized.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  const date = slashDateMatch
+    ? new Date(`${slashDateMatch[3]}-${slashDateMatch[2]}-${slashDateMatch[1]}T00:00:00`)
+    : new Date(normalized);
+
+  if (Number.isNaN(date.getTime())) {
+    return normalized;
+  }
+
   return new Intl.DateTimeFormat("fr-FR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  }).format(new Date(value));
+  }).format(date);
 }
 
 function normalizeItems(source: unknown): ParsedInvoiceItem[] {
@@ -196,7 +206,7 @@ export async function downloadInvoicePdf({ invoiceId, payload, fallback }: Downl
       </div>
       <div style="display:flex;min-height:128px;min-width:160px;flex-direction:column;align-items:flex-end;justify-content:flex-start;gap:16px;">
         ${businessLogoUrl
-          ? `<img src="${escapeHtml(businessLogoUrl)}" alt="logo" style="height:128px;width:auto;object-fit:contain;" />`
+          ? `<img src="${escapeHtml(businessLogoUrl)}" crossorigin="anonymous" alt="logo" style="height:128px;width:auto;object-fit:contain;" />`
           : `<div style="display:flex;height:128px;width:160px;align-items:center;justify-content:center;border:1px solid #111111;border-radius:999px;font-size:12px;font-weight:500;color:#111111;">${pdfT.logoFallback}</div>`}
         <div style="display:flex;gap:8px;">
           <span style="border:1px solid #111111;border-radius:999px;padding:4px 16px;font-size:14px;font-weight:500;color:#111111;">${documentTitle} n°${escapeHtml(invoiceNumber)}</span>
