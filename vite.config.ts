@@ -10,7 +10,10 @@ import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig({
   cloudflare: false,
   tanstackStart: {
-    ssr: false,
+    target: "static",
+    spa: {
+      enabled: true,
+    },
   },
   vite: {
     plugins: [
