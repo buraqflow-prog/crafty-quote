@@ -466,6 +466,7 @@ async function generateInvoicePdf(data: NormalizedInvoicePdfData) {
   const pdfT = invoicePdfText[data.invoiceContentLanguage];
   const businessLogoDataUrl = data.businessLogoUrl ? await imageUrlToDataUrl(data.businessLogoUrl) : null;
   const documentTitle = data.documentType === "devis" ? pdfT.quote : pdfT.invoice;
+  const amountInWords = toAmountWords(data.isVatEnabled ? data.totalTtc : data.totalHt, data.invoiceContentLanguage);
 
   const template = document.createElement("div");
   template.style.position = "fixed";
@@ -484,9 +485,9 @@ async function generateInvoicePdf(data: NormalizedInvoicePdfData) {
       (item) => `
       <tr style="background:#ffffff;">
         <td style="border:3px solid #000000;padding:14px 12px;font-size:14px;font-weight:700;color:#000000;word-break:break-word;">${escapeHtml(item.description || "-")}</td>
-        <td style="border:3px solid #000000;padding:14px 12px;text-align:center;font-size:16px;font-weight:900;color:#000000;">${escapeHtml(formatMad(item.unitPrice))}</td>
+        <td style="border:3px solid #000000;padding:14px 12px;text-align:center;font-size:16px;font-weight:900;color:#000000;">${escapeHtml(formatAmount(item.unitPrice, data.invoiceContentLanguage))}</td>
         <td style="border:3px solid #000000;padding:14px 12px;text-align:center;font-size:14px;font-weight:900;color:#000000;">${item.quantity}</td>
-        <td style="border:3px solid #000000;padding:14px 12px;text-align:center;font-size:16px;font-weight:900;color:#000000;">${escapeHtml(formatMad(item.lineTotal))}</td>
+        <td style="border:3px solid #000000;padding:14px 12px;text-align:center;font-size:16px;font-weight:900;color:#000000;">${escapeHtml(formatAmount(item.lineTotal, data.invoiceContentLanguage))}</td>
       </tr>
     `,
     )
@@ -530,7 +531,7 @@ async function generateInvoicePdf(data: NormalizedInvoicePdfData) {
     </div>
     <table style="width:100%;border-collapse:collapse;border:4px solid #000000;">
       <thead>
-        <tr style="background:#000000;color:#ffffff;">
+        <tr style="background:#4b5563;color:#ffffff;">
           <th style="border:3px solid #000000;padding:12px;text-align:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#ffffff;">${pdfT.description}</th>
           <th style="border:3px solid #000000;padding:12px;text-align:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#ffffff;">${pdfT.price}</th>
           <th style="border:3px solid #000000;padding:12px;text-align:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#ffffff;">${pdfT.quantity}</th>
@@ -545,23 +546,24 @@ async function generateInvoicePdf(data: NormalizedInvoicePdfData) {
       ${data.isVatEnabled
         ? `<div style="width:320px;border:2px solid #000000;background:#ffffff;padding:12px;text-align:right;">
             <div style="display:flex;align-items:center;justify-content:space-between;color:#111111;font-size:14px;font-weight:700;">
-              <span>${pdfT.totalHt}</span><span>${escapeHtml(formatMad(data.totalHt))}</span>
+              <span>${pdfT.totalHt}</span><span>${escapeHtml(formatAmount(data.totalHt, data.invoiceContentLanguage))}</span>
             </div>
             <div style="margin-top:4px;display:flex;align-items:center;justify-content:space-between;color:#111111;font-size:14px;font-weight:700;">
-              <span>${pdfT.totalVat} (${data.vatRate}%)</span><span>${escapeHtml(formatMad(data.vatAmount))}</span>
+              <span>${pdfT.totalVat} (${data.vatRate}%)</span><span>${escapeHtml(formatAmount(data.vatAmount, data.invoiceContentLanguage))}</span>
             </div>
-            <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;background:#000000;padding:12px;color:#ffffff;">
+            <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;background:#4b5563;padding:12px;color:#ffffff;">
               <span style="font-size:14px;font-weight:900;">${pdfT.totalTtc}</span>
-              <strong style="font-size:18px;font-weight:900;">${escapeHtml(formatMad(data.totalTtc))}</strong>
+              <strong style="font-size:18px;font-weight:900;">${escapeHtml(formatAmount(data.totalTtc, data.invoiceContentLanguage))}</strong>
             </div>
           </div>`
         : `<div style="width:320px;border:2px solid #000000;background:#ffffff;padding:12px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;background:#000000;padding:12px;color:#ffffff;">
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#4b5563;padding:12px;color:#ffffff;">
               <span style="font-size:14px;font-weight:900;">${pdfT.totalGlobal}</span>
-              <strong style="font-size:18px;font-weight:900;">${escapeHtml(formatMad(data.totalHt))}</strong>
+              <strong style="font-size:18px;font-weight:900;">${escapeHtml(formatAmount(data.totalHt, data.invoiceContentLanguage))}</strong>
             </div>
           </div>`}
     </div>
+    <p style="margin:18px 0 0;font-size:13px;line-height:1.5;color:#111111;">${pdfT.amountInWordsPrefix} ${escapeHtml(amountInWords)}</p>
     <footer style="margin-top:40px;">
       <hr style="margin:0 0 8px;border:none;border-top:1px solid #111111;" />
       <p style="margin:0;font-size:12px;font-weight:700;color:#111111;">${pdfT.thanks}</p>
