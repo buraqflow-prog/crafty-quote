@@ -39,19 +39,22 @@ function NotFoundComponent() {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  ssr: false,
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { name: "description", content: "Mobile-first web app for craftsmen to generate elegant quotes/invoices client-side." },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:description", content: "Mobile-first web app for craftsmen to generate elegant quotes/invoices client-side." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Lovable App" },
+      { name: "twitter:description", content: "Mobile-first web app for craftsmen to generate elegant quotes/invoices client-side." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/uk76ESK6kHTriOJ6fOLH411zHP73/social-images/social-1777226357129-ddd.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/uk76ESK6kHTriOJ6fOLH411zHP73/social-images/social-1777226357129-ddd.webp" },
     ],
   }),
   shellComponent: RootShell,
