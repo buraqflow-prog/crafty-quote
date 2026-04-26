@@ -304,18 +304,18 @@ function toAmountWords(value: number, language: InvoiceContentLanguage): string 
   if (language === "en") {
     const majorWords = toEnglishNumberWords(major);
     const minorWords = minor > 0 ? toEnglishNumberWords(minor) : "";
-    return minor > 0 ? `${majorWords} dirhams and ${minorWords} cents` : `${majorWords} dirhams`;
+    return minor > 0 ? `${majorWords} and ${minorWords}` : majorWords;
   }
 
   if (language === "ar") {
     const majorWords = toArabicNumberWords(major);
     const minorWords = minor > 0 ? toArabicNumberWords(minor) : "";
-    return minor > 0 ? `${majorWords} درهم و ${minorWords} سنتيم` : `${majorWords} درهم`;
+    return minor > 0 ? `${majorWords} و ${minorWords}` : majorWords;
   }
 
   const majorWords = toFrenchNumberWords(major);
   const minorWords = minor > 0 ? toFrenchNumberWords(minor) : "";
-  return minor > 0 ? `${majorWords} dirhams et ${minorWords} centimes` : `${majorWords} dirhams`;
+  return minor > 0 ? `${majorWords} et ${minorWords}` : majorWords;
 }
 
 function formatDate(value: string) {
