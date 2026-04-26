@@ -877,6 +877,90 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+const InvoiceItemRow = memo(function InvoiceItemRow({
+  item,
+  index,
+  canDelete,
+  descriptionPlaceholder,
+  subtotalLabel,
+  deleteLabel,
+  quantityLabel,
+  unitPriceLabel,
+  onUpdate,
+  onRemove,
+}: InvoiceItemRowProps) {
+  const lineTotal = item.quantity * item.unitPrice;
+
+  return (
+    <div className="grid grid-cols-1 gap-3 bg-background p-3 md:grid-cols-12 md:items-center md:gap-2">
+      <div className="flex items-center justify-between md:col-span-1 md:justify-center">
+        <span className="text-sm font-semibold text-foreground">{index + 1}</span>
+        {canDelete && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => onRemove(item.id)}
+            aria-label={deleteLabel}
+            className="h-8 w-8 md:hidden"
+          >
+            <Trash2 />
+          </Button>
+        )}
+      </div>
+
+      <div className="md:col-span-5">
+        <Input
+          value={item.description}
+          onChange={(e) => onUpdate(item.id, { description: e.target.value })}
+          placeholder={descriptionPlaceholder}
+        />
+      </div>
+
+      <div className="md:col-span-2">
+        <Input
+          type="number"
+          min={1}
+          value={item.quantity}
+          aria-label={quantityLabel}
+          onChange={(e) => onUpdate(item.id, { quantity: Math.max(1, Number(e.target.value) || 1) })}
+        />
+      </div>
+
+      <div className="md:col-span-2">
+        <Input
+          type="number"
+          min={0}
+          step="0.01"
+          value={item.unitPrice}
+          aria-label={unitPriceLabel}
+          onChange={(e) => onUpdate(item.id, { unitPrice: Math.max(0, Number(e.target.value) || 0) })}
+        />
+      </div>
+
+      <div className="flex items-center justify-between rounded-md border border-border bg-surface-soft px-3 py-2 md:col-span-2 md:justify-center">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground md:hidden">{subtotalLabel}</p>
+        <p className="text-sm font-semibold text-foreground">{formatCurrency(lineTotal)}</p>
+      </div>
+
+      {canDelete && (
+        <div className="hidden md:col-span-12 md:flex md:justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onRemove(item.id)}
+            aria-label={deleteLabel}
+            className="h-8"
+          >
+            <Trash2 />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+});
+
 function incrementSequence(value: string) {
   const match = value.match(/^(.*?)(\d+)$/);
   if (!match) return "00001";
