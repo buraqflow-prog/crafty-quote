@@ -484,10 +484,10 @@ async function generateInvoicePdf(data: NormalizedInvoicePdfData) {
     .map(
       (item) => `
       <tr style="background:#ffffff;">
-        <td style="border:3px solid #000000;padding:14px 12px;font-size:14px;font-weight:700;color:#000000;word-break:break-word;">${escapeHtml(item.description || "-")}</td>
-        <td style="border:3px solid #000000;padding:14px 12px;text-align:center;font-size:16px;font-weight:900;color:#000000;">${escapeHtml(formatAmount(item.unitPrice, data.invoiceContentLanguage))}</td>
-        <td style="border:3px solid #000000;padding:14px 12px;text-align:center;font-size:14px;font-weight:900;color:#000000;">${item.quantity}</td>
-        <td style="border:3px solid #000000;padding:14px 12px;text-align:center;font-size:16px;font-weight:900;color:#000000;">${escapeHtml(formatAmount(item.lineTotal, data.invoiceContentLanguage))}</td>
+        <td style="border:1.5px solid #000000;padding:14px 12px;font-size:14px;font-weight:700;color:#000000;word-break:break-word;">${escapeHtml(item.description || "-")}</td>
+        <td style="border:1.5px solid #000000;padding:14px 12px;text-align:center;font-size:16px;font-weight:900;color:#000000;">${escapeHtml(formatAmount(item.unitPrice, data.invoiceContentLanguage))}</td>
+        <td style="border:1.5px solid #000000;padding:14px 12px;text-align:center;font-size:14px;font-weight:900;color:#000000;">${item.quantity}</td>
+        <td style="border:1.5px solid #000000;padding:14px 12px;text-align:center;font-size:16px;font-weight:900;color:#000000;">${escapeHtml(formatAmount(item.lineTotal, data.invoiceContentLanguage))}</td>
       </tr>
     `,
     )
@@ -529,13 +529,13 @@ async function generateInvoicePdf(data: NormalizedInvoicePdfData) {
       <p style="margin:0;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#111111;">${pdfT.details}</p>
       <p style="margin:0;font-size:12px;font-weight:500;color:#111111;">${data.items.length} ${pdfT.lines}</p>
     </div>
-    <table style="width:100%;border-collapse:collapse;border:4px solid #000000;">
+    <table style="width:100%;border-collapse:collapse;border:2px solid #000000;">
       <thead>
         <tr style="background:#4b5563;color:#ffffff;">
-          <th style="border:3px solid #000000;padding:12px;text-align:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#ffffff;">${pdfT.description}</th>
-          <th style="border:3px solid #000000;padding:12px;text-align:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#ffffff;">${pdfT.price}</th>
-          <th style="border:3px solid #000000;padding:12px;text-align:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#ffffff;">${pdfT.quantity}</th>
-          <th style="border:3px solid #000000;padding:12px;text-align:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#ffffff;">${pdfT.total}</th>
+          <th style="border:1.5px solid #000000;padding:12px;text-align:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#ffffff;">${pdfT.description}</th>
+          <th style="border:1.5px solid #000000;padding:12px;text-align:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#ffffff;">${pdfT.price}</th>
+          <th style="border:1.5px solid #000000;padding:12px;text-align:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#ffffff;">${pdfT.quantity}</th>
+          <th style="border:1.5px solid #000000;padding:12px;text-align:center;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#ffffff;">${pdfT.total}</th>
         </tr>
       </thead>
       <tbody>
