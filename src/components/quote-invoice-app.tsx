@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Save, ArrowLeft } from "lucide-react";
+import { Settings, Plus, Trash2, FileText, LoaderCircle, LogOut, Save, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -159,7 +159,6 @@ const uiText = {
     totalTtcLabel: "Total TTC",
     generatePdfLabel: "Générer le PDF",
     generatingPdfLabel: "Génération en cours...",
-    sendWhatsAppLabel: "Envoyer par WhatsApp",
     saveInvoiceLabel: "Enregistrer",
     logoutLabel: "Déconnexion",
     networkOnline: "En ligne",
@@ -213,7 +212,6 @@ const uiText = {
     totalTtcLabel: "المجموع مع الضريبة",
     generatePdfLabel: "إنشاء الفاتورة",
     generatingPdfLabel: "جاري الإنشاء...",
-    sendWhatsAppLabel: "إرسال عبر واتساب",
     saveInvoiceLabel: "حفظ",
     logoutLabel: "تسجيل الخروج",
     networkOnline: "متصل",
@@ -267,7 +265,6 @@ const uiText = {
     totalTtcLabel: "Total incl. VAT",
     generatePdfLabel: "Generate PDF",
     generatingPdfLabel: "Generating...",
-    sendWhatsAppLabel: "Send via WhatsApp",
     saveInvoiceLabel: "Save",
     logoutLabel: "Logout",
     networkOnline: "Online",
