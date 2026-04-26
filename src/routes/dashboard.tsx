@@ -173,9 +173,9 @@ function DashboardPage() {
                               variant="ghost"
                               size="icon"
                               aria-label={t.downloadPdf}
-                              onClick={() => {
+                              onClick={async () => {
                                 try {
-                                  downloadInvoicePdf({
+                                  await downloadInvoicePdf({
                                     invoiceId: invoice.id,
                                     payload: invoice.payload,
                                     fallback: {
