@@ -18,7 +18,7 @@ type ParsedInvoiceItem = {
   lineTotal: number;
 };
 
-type InvoiceContentLanguage = "fr" | "en";
+type InvoiceContentLanguage = "fr" | "en" | "ar";
 
 type NormalizedInvoicePdfData = {
   invoiceId: string;
@@ -59,6 +59,7 @@ const invoicePdfText = {
     totalVat: "TVA",
     totalTtc: "Total TTC",
     totalGlobal: "Total Global",
+    amountInWordsPrefix: "Arrêté le présent document à la somme de :",
     thanks: "Merci pour votre confiance",
     businessIceLabel: "ICE",
     logoFallback: "LOGO",
@@ -78,7 +79,28 @@ const invoicePdfText = {
     totalVat: "VAT",
     totalTtc: "Total incl. VAT",
     totalGlobal: "Grand total",
+    amountInWordsPrefix: "This document is hereby set at the amount of:",
     thanks: "Thank you for your trust",
+    businessIceLabel: "ICE",
+    logoFallback: "LOGO",
+  },
+  ar: {
+    quote: "عرض سعر",
+    invoice: "فاتورة",
+    emitter: "المُصدِر",
+    client: "العميل",
+    details: "تفاصيل الخدمات",
+    lines: "سطر",
+    description: "الوصف",
+    price: "الثمن",
+    quantity: "الكمية",
+    total: "المجموع",
+    totalHt: "المجموع دون ضريبة",
+    totalVat: "الضريبة",
+    totalTtc: "المجموع مع الضريبة",
+    totalGlobal: "المجموع الإجمالي",
+    amountInWordsPrefix: "حُدِّد هذا المستند بمبلغ:",
+    thanks: "شكراً على ثقتكم",
     businessIceLabel: "ICE",
     logoFallback: "LOGO",
   },
@@ -112,12 +134,188 @@ function parseMaybeJson(value: unknown): unknown {
   }
 }
 
-function formatMad(amount: number) {
-  return new Intl.NumberFormat("fr-MA", {
-    style: "currency",
-    currency: "MAD",
+function formatAmount(amount: number, language: InvoiceContentLanguage) {
+  const locale = language === "en" ? "en-US" : language === "ar" ? "ar-MA" : "fr-FR";
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
+}
+
+function toFrenchNumberWords(num: number): string {
+  if (num === 0) return "zéro";
+
+  const units = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
+  const teens = ["dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
+  const tens = ["", "", "vingt", "trente", "quarante", "cinquante", "soixante"];
+
+  const twoDigits = (n: number): string => {
+    if (n < 10) return units[n];
+    if (n < 20) return teens[n - 10];
+    if (n < 70) {
+      const ten = Math.floor(n / 10);
+      const unit = n % 10;
+      if (unit === 0) return tens[ten];
+      if (unit === 1) return `${tens[ten]} et un`;
+      return `${tens[ten]}-${units[unit]}`;
+    }
+    if (n < 80) {
+      if (n === 71) return "soixante et onze";
+      return `soixante-${twoDigits(n - 60)}`;
+    }
+    if (n === 80) return "quatre-vingts";
+    return `quatre-vingt-${twoDigits(n - 80)}`;
+  };
+
+  const threeDigits = (n: number): string => {
+    if (n < 100) return twoDigits(n);
+    const hundred = Math.floor(n / 100);
+    const remainder = n % 100;
+
+    let hundredPart = "";
+    if (hundred === 1) {
+      hundredPart = "cent";
+    } else {
+      hundredPart = `${units[hundred]} cent`;
+      if (remainder === 0) hundredPart += "s";
+    }
+
+    if (remainder === 0) return hundredPart;
+    return `${hundredPart} ${twoDigits(remainder)}`;
+  };
+
+  const scales = [
+    { value: 1_000_000_000, singular: "milliard", plural: "milliards" },
+    { value: 1_000_000, singular: "million", plural: "millions" },
+    { value: 1_000, singular: "mille", plural: "mille" },
+  ];
+
+  let remaining = num;
+  const words: string[] = [];
+
+  for (const scale of scales) {
+    if (remaining >= scale.value) {
+      const count = Math.floor(remaining / scale.value);
+      remaining %= scale.value;
+
+      if (scale.value === 1_000) {
+        words.push(count === 1 ? "mille" : `${toFrenchNumberWords(count)} mille`);
+      } else {
+        words.push(`${toFrenchNumberWords(count)} ${count > 1 ? scale.plural : scale.singular}`);
+      }
+    }
+  }
+
+  if (remaining > 0) words.push(threeDigits(remaining));
+  return words.join(" ").replace(/\s+/g, " ").trim();
+}
+
+function toEnglishNumberWords(num: number): string {
+  if (num === 0) return "zero";
+
+  const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+  const teens = ["ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+  const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+  const scales = ["", "thousand", "million", "billion"];
+
+  const threeDigits = (n: number): string => {
+    const parts: string[] = [];
+    const h = Math.floor(n / 100);
+    const r = n % 100;
+    if (h > 0) parts.push(`${ones[h]} hundred`);
+    if (r >= 20) {
+      const t = Math.floor(r / 10);
+      const o = r % 10;
+      parts.push(o > 0 ? `${tens[t]}-${ones[o]}` : tens[t]);
+    } else if (r >= 10) {
+      parts.push(teens[r - 10]);
+    } else if (r > 0) {
+      parts.push(ones[r]);
+    }
+    return parts.join(" ");
+  };
+
+  let value = num;
+  let scaleIndex = 0;
+  const parts: string[] = [];
+  while (value > 0) {
+    const chunk = value % 1000;
+    if (chunk > 0) {
+      const chunkWords = threeDigits(chunk);
+      parts.unshift(scales[scaleIndex] ? `${chunkWords} ${scales[scaleIndex]}` : chunkWords);
+    }
+    value = Math.floor(value / 1000);
+    scaleIndex += 1;
+  }
+  return parts.join(" ").trim();
+}
+
+function toArabicNumberWords(num: number): string {
+  if (num === 0) return "صفر";
+  const ones = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة"];
+  const teens = ["عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
+  const tens = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
+  const hundreds = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
+
+  const twoDigits = (n: number): string => {
+    if (n < 10) return ones[n];
+    if (n < 20) return teens[n - 10];
+    const t = Math.floor(n / 10);
+    const o = n % 10;
+    return o === 0 ? tens[t] : `${ones[o]} و ${tens[t]}`;
+  };
+
+  const threeDigits = (n: number): string => {
+    const h = Math.floor(n / 100);
+    const r = n % 100;
+    if (h === 0) return twoDigits(r);
+    if (r === 0) return hundreds[h];
+    return `${hundreds[h]} و ${twoDigits(r)}`;
+  };
+
+  const chunks = [
+    { value: 1_000_000_000, one: "مليار", two: "ملياران", many: "مليارات" },
+    { value: 1_000_000, one: "مليون", two: "مليونان", many: "ملايين" },
+    { value: 1_000, one: "ألف", two: "ألفان", many: "آلاف" },
+  ];
+
+  let remaining = num;
+  const parts: string[] = [];
+  for (const chunk of chunks) {
+    if (remaining >= chunk.value) {
+      const count = Math.floor(remaining / chunk.value);
+      remaining %= chunk.value;
+      if (count === 1) parts.push(chunk.one);
+      else if (count === 2) parts.push(chunk.two);
+      else if (count >= 3 && count <= 10) parts.push(`${toArabicNumberWords(count)} ${chunk.many}`);
+      else parts.push(`${toArabicNumberWords(count)} ${chunk.one}`);
+    }
+  }
+
+  if (remaining > 0) parts.push(threeDigits(remaining));
+  return parts.join(" و ").trim();
+}
+
+function toAmountWords(value: number, language: InvoiceContentLanguage): string {
+  const safeValue = Number.isFinite(value) ? Math.max(0, Math.round(value * 100) / 100) : 0;
+  const major = Math.floor(safeValue);
+  const minor = Math.round((safeValue - major) * 100);
+
+  if (language === "en") {
+    const majorWords = toEnglishNumberWords(major);
+    const minorWords = minor > 0 ? toEnglishNumberWords(minor) : "";
+    return minor > 0 ? `${majorWords} dirhams and ${minorWords} cents` : `${majorWords} dirhams`;
+  }
+
+  if (language === "ar") {
+    const majorWords = toArabicNumberWords(major);
+    const minorWords = minor > 0 ? toArabicNumberWords(minor) : "";
+    return minor > 0 ? `${majorWords} درهم و ${minorWords} سنتيم` : `${majorWords} درهم`;
+  }
+
+  const majorWords = toFrenchNumberWords(major);
+  const minorWords = minor > 0 ? toFrenchNumberWords(minor) : "";
+  return minor > 0 ? `${majorWords} dirhams et ${minorWords} centimes` : `${majorWords} dirhams`;
 }
 
 function formatDate(value: string) {
@@ -237,7 +435,8 @@ function buildInvoicePdfDataFromPayload({ invoiceId, payload, fallback }: Downlo
     toString(payloadObj?.language) ||
     "fr";
 
-  const invoiceContentLanguage: InvoiceContentLanguage = invoiceContentLanguageRaw === "en" ? "en" : "fr";
+  const invoiceContentLanguage: InvoiceContentLanguage =
+    invoiceContentLanguageRaw === "en" || invoiceContentLanguageRaw === "ar" ? invoiceContentLanguageRaw : "fr";
 
   return {
     invoiceId,
