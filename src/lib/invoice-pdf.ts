@@ -136,6 +136,29 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#39;");
 }
 
+async function imageUrlToDataUrl(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url, { mode: "cors" });
+    if (!response.ok) return null;
+    const blob = await response.blob();
+
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") {
+          resolve(reader.result);
+          return;
+        }
+        reject(new Error("Invalid image data"));
+      };
+      reader.onerror = () => reject(reader.error ?? new Error("Image conversion failed"));
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
 export async function downloadInvoicePdf({ invoiceId, payload, fallback }: DownloadInvoicePdfInput) {
   const payloadObj = toRecord(payload);
   const fullState = toRecord(payloadObj?.fullState);
@@ -166,6 +189,7 @@ export async function downloadInvoicePdf({ invoiceId, payload, fallback }: Downl
   const businessPhone = toString(businessProfile?.businessPhone, "-");
   const businessIce = toString(businessProfile?.businessIce, "");
   const businessLogoUrl = toString(businessProfile?.businessLogoUrl, "");
+  const businessLogoDataUrl = businessLogoUrl ? await imageUrlToDataUrl(businessLogoUrl) : null;
 
   const items = normalizeItems(fullState?.items ?? payloadObj?.items);
   const safeClientName = clientName || "-";
@@ -205,8 +229,8 @@ export async function downloadInvoicePdf({ invoiceId, payload, fallback }: Downl
         <p style="margin:0 0 32px;font-size:64px;line-height:1;text-transform:uppercase;color:#111111;">${documentTitle}</p>
       </div>
       <div style="display:flex;min-height:128px;min-width:160px;flex-direction:column;align-items:flex-end;justify-content:flex-start;gap:16px;">
-        ${businessLogoUrl
-          ? `<img src="${escapeHtml(businessLogoUrl)}" crossorigin="anonymous" alt="logo" style="height:128px;width:auto;object-fit:contain;" />`
+        ${businessLogoDataUrl
+          ? `<img src="${escapeHtml(businessLogoDataUrl)}" alt="logo" style="height:128px;width:auto;object-fit:contain;" />`
           : `<div style="display:flex;height:128px;width:160px;align-items:center;justify-content:center;border:1px solid #111111;border-radius:999px;font-size:12px;font-weight:500;color:#111111;">${pdfT.logoFallback}</div>`}
         <div style="display:flex;gap:8px;">
           <span style="border:1px solid #111111;border-radius:999px;padding:4px 16px;font-size:14px;font-weight:500;color:#111111;">${documentTitle} n°${escapeHtml(invoiceNumber)}</span>
