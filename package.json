@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && bun run postbuild:spa-index",
     "build:dev": "vite build --mode development",
+    "postbuild:spa-index": "bun -e \"import { cpSync, existsSync } from 'node:fs'; if (existsSync('dist/client/_shell.html')) cpSync('dist/client/_shell.html', 'dist/client/index.html');\"",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write ."
