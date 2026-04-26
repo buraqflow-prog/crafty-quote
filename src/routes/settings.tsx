@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { LoaderCircle, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth";
+import { profileQueryKey, profileQueryOptions } from "@/lib/profile-query";
 import { fetchUserProfile, profileInputSchema, upsertUserProfile, uploadProfileLogo } from "@/lib/profile";
 import { uiDictionary } from "@/lib/ui-i18n";
 import { useUiLanguage } from "@/lib/ui-language";
@@ -40,38 +42,44 @@ function SettingsPage() {
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const queryClient = useQueryClient();
+
+  const profileQuery = useQuery({
+    ...profileQueryOptions(user?.id ?? ""),
+    enabled: Boolean(user?.id),
+  });
 
   useEffect(() => {
     if (!user) {
+      setForm(emptyForm);
       setIsProfileLoading(false);
       return;
     }
 
-    setIsProfileLoading(true);
+    if (!profileQuery.data) {
+      setForm(emptyForm);
+      return;
+    }
 
-    fetchUserProfile(user.id)
-      .then((profile) => {
-        if (!profile) {
-          setForm(emptyForm);
-          return;
-        }
+    setForm({
+      business_name: profileQuery.data.business_name || "",
+      phone: profileQuery.data.phone || "",
+      address: profileQuery.data.address || "",
+      ice_number: profileQuery.data.ice_number || "",
+      logo_url: profileQuery.data.logo_url || "",
+    });
+  }, [profileQuery.data, user]);
 
-        setForm({
-          business_name: profile.business_name || "",
-          phone: profile.phone || "",
-          address: profile.address || "",
-          ice_number: profile.ice_number || "",
-          logo_url: profile.logo_url || "",
-        });
-      })
-      .catch((error) => {
-        console.error(error);
-        toast.error(t.profileLoadError);
-      })
-      .finally(() => {
-        setIsProfileLoading(false);
-      });
-  }, [t.profileLoadError, user]);
+  useEffect(() => {
+    if (profileQuery.error) {
+      console.error(profileQuery.error);
+      toast.error(t.profileLoadError);
+    }
+  }, [profileQuery.error, t.profileLoadError]);
+
+  useEffect(() => {
+    setIsProfileLoading(Boolean(user?.id) && profileQuery.isLoading);
+  }, [profileQuery.isLoading, user?.id]);
 
   const isBusy = isSaving || isUploadingLogo;
 
@@ -89,6 +97,9 @@ function SettingsPage() {
     try {
       const publicUrl = await uploadProfileLogo(user.id, file);
       setForm((prev) => ({ ...prev, logo_url: publicUrl }));
+      queryClient.setQueryData(profileQueryKey(user.id), (current: Awaited<ReturnType<typeof fetchUserProfile>>) =>
+        current ? { ...current, logo_url: publicUrl } : current,
+      );
       toast.success(t.profileUploadSuccess);
     } catch (error) {
       const message = error instanceof Error ? error.message : t.profileUploadError;
@@ -108,6 +119,7 @@ function SettingsPage() {
     setIsSaving(true);
     try {
       await upsertUserProfile(user.id, form);
+      await queryClient.invalidateQueries({ queryKey: profileQueryKey(user.id) });
       toast.success(t.profileSaveSuccess);
     } catch {
       toast.error(t.profileSaveError);
