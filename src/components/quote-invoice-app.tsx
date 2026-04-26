@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Save, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { downloadInvoicePdf } from "@/lib/invoice-pdf";
 import { uiDictionary } from "@/lib/ui-i18n";
 import { enqueueOfflineInvoice, saveInvoiceOnline, type InvoicePayload } from "@/lib/offline-invoice-sync";
 import type { UserProfile } from "@/lib/profile";
@@ -291,7 +292,6 @@ export function QuoteInvoiceApp({
   const [isExporting, setIsExporting] = useState(false);
   const [isSavingInvoice, setIsSavingInvoice] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
-  const pdfTemplateRef = useRef<HTMLDivElement>(null);
   const isUiArabic = uiLanguage === "ar";
   const t = uiText[uiLanguage];
   const uiT = uiDictionary[uiLanguage];
@@ -387,7 +387,6 @@ export function QuoteInvoiceApp({
   );
   const vatAmount = useMemo(() => (isVatEnabled ? totalHT * (vatRate / 100) : 0), [isVatEnabled, totalHT, vatRate]);
   const totalTTC = useMemo(() => totalHT + vatAmount, [totalHT, vatAmount]);
-  const amountInWords = useMemo(() => toFrenchCurrencyWords(totalTTC), [totalTTC]);
 
   const saveSettings = () => {
     setSettings(settingsDraft);
@@ -421,136 +420,80 @@ export function QuoteInvoiceApp({
   const businessIce = profile?.ice_number?.trim() || "";
   const businessLogoUrl = profile?.logo_url?.trim() || "";
 
+  const buildInvoicePayload = (): InvoicePayload => ({
+    documentType: docType,
+    invoiceNumber: formattedInvoiceNumber,
+    clientName,
+    clientPhone,
+    clientAddress,
+    clientIce,
+    items: items.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    })),
+    totalHT,
+    vatRate,
+    totalTTC,
+    isVatEnabled,
+    issuedAt: new Date().toISOString(),
+    fullState: {
+      uiLanguage,
+      invoiceContentLanguage,
+      documentType: docType,
+      invoiceNumber: formattedInvoiceNumber,
+      client: {
+        name: clientName,
+        phone: clientPhone,
+        address: clientAddress,
+        ice: clientIce,
+      },
+      items: items.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        lineTotal: item.quantity * item.unitPrice,
+      })),
+      totals: {
+        totalHT,
+        vatRate,
+        vatAmount,
+        totalTTC,
+        isVatEnabled,
+      },
+      issuedAt: new Date().toISOString(),
+      settings: {
+        invoicePrefix: settings.invoicePrefix,
+        invoiceSequence: settings.invoiceSequence,
+        autoIncrementInvoiceNumber: settings.autoIncrementInvoiceNumber,
+      },
+      businessProfile: {
+        businessName,
+        businessAddress,
+        businessPhone,
+        businessIce,
+        businessLogoUrl,
+      },
+    },
+  });
+
   const generatePdf = async () => {
-    if (isExporting || !pdfTemplateRef.current) return;
+    if (isExporting) return;
 
     setIsExporting(true);
     try {
-      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import("html2canvas"), import("jspdf")]);
-
-      const templateWidthPx = pdfTemplateRef.current.offsetWidth;
-      const templateHeightPx = pdfTemplateRef.current.offsetHeight;
-      const expectedA4HeightPx = templateWidthPx * (297 / 210);
-      const heightDelta = Math.abs(templateHeightPx - expectedA4HeightPx);
-
-      if (heightDelta > 8) {
-        throw new Error(`Template A4 invalide: hauteur attendue ${Math.round(expectedA4HeightPx)}px, actuelle ${Math.round(templateHeightPx)}px.`);
-      }
-
-      if (document.fonts?.ready) {
-        await document.fonts.ready;
-      }
-
-      const canvas = await html2canvas(pdfTemplateRef.current, {
-        scale: 3,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-        onclone: (clonedDoc) => {
-          clonedDoc.documentElement.style.backgroundColor = "#ffffff";
-          clonedDoc.documentElement.style.color = "#0f172a";
-          clonedDoc.body.style.backgroundColor = "#ffffff";
-          clonedDoc.body.style.color = "#0f172a";
-          clonedDoc.body.style.borderColor = "#cbd5e1";
-
-          const clonedTemplate = clonedDoc.getElementById("pdf-template");
-          if (clonedTemplate) {
-            clonedTemplate.style.backgroundColor = "#ffffff";
-            clonedTemplate.style.color = "#0f172a";
-            clonedTemplate.style.borderColor = "#cbd5e1";
-            clonedTemplate.style.fontFamily = '"Plus Jakarta Sans", "Inter", system-ui, sans-serif';
-            clonedTemplate.style.setProperty("--background", "#ffffff");
-            clonedTemplate.style.setProperty("--foreground", "#0f172a");
-            clonedTemplate.style.setProperty("--card", "#ffffff");
-            clonedTemplate.style.setProperty("--muted", "#f8fafc");
-            clonedTemplate.style.setProperty("--border", "#cbd5e1");
-            clonedTemplate.style.setProperty("--ring", "#94a3b8");
-
-            clonedTemplate.querySelectorAll<HTMLElement>("*").forEach((element) => {
-              element.style.color = element.style.color || "#0f172a";
-              element.style.borderColor = element.style.borderColor || "#cbd5e1";
-              if (!element.style.backgroundColor || element.style.backgroundColor === "oklch") {
-                element.style.backgroundColor = "transparent";
-              }
-              element.style.setProperty("--background", "#ffffff");
-              element.style.setProperty("--foreground", "#0f172a");
-              element.style.setProperty("--card", "#ffffff");
-              element.style.setProperty("--muted", "#f8fafc");
-              element.style.setProperty("--border", "#cbd5e1");
-              element.style.setProperty("--ring", "#94a3b8");
-            });
-          }
+      const payload = buildInvoicePayload();
+      await downloadInvoicePdf({
+        invoiceId: payload.invoiceNumber,
+        payload,
+        fallback: {
+          documentType: payload.documentType,
+          invoiceNumber: payload.invoiceNumber,
+          clientName: payload.clientName,
+          issuedAt: payload.issuedAt,
+          totalTtc: payload.totalTTC,
         },
       });
-
-      const orientation = canvas.width > canvas.height ? "landscape" : "portrait";
-      const pdf = new jsPDF({ orientation, unit: "mm", format: "a4" });
-      const pageWidth = orientation === "portrait" ? 210 : 297;
-      const pageHeight = orientation === "portrait" ? 297 : 210;
-      const margin = 10;
-      const printableWidth = pageWidth - margin * 2;
-      const printableHeight = pageHeight - margin * 2;
-
-      const canvasPageHeightPx = Math.floor((printableHeight * canvas.width) / printableWidth);
-      let renderedHeightPx = 0;
-      let pageIndex = 0;
-
-      while (renderedHeightPx < canvas.height) {
-        const sliceHeight = Math.min(canvasPageHeightPx, canvas.height - renderedHeightPx);
-        const pageCanvas = document.createElement("canvas");
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = sliceHeight;
-
-        const pageContext = pageCanvas.getContext("2d");
-        if (!pageContext) throw new Error("Impossible de créer le contexte canvas pour la pagination.");
-
-        pageContext.drawImage(canvas, 0, renderedHeightPx, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
-
-        const imageData = pageCanvas.toDataURL("image/jpeg", 0.98);
-        const imageHeightMm = (sliceHeight * printableWidth) / canvas.width;
-
-        if (pageIndex > 0) {
-          pdf.addPage("a4", orientation);
-        }
-
-        pdf.addImage(imageData, "JPEG", margin, margin, printableWidth, imageHeightMm);
-        renderedHeightPx += sliceHeight;
-        pageIndex += 1;
-      }
-
-      const safeClient = clientName.trim().replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\-]/g, "") || "client";
-      const fileName = `${docType}_${safeClient}_${Date.now()}.pdf`;
-      const pdfBlob = pdf.output("blob");
-      const pdfFile = new File([pdfBlob], fileName, { type: "application/pdf" });
-
-      const downloadPdf = () => {
-        const url = URL.createObjectURL(pdfBlob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
-      };
-
-      if (navigator.canShare?.({ files: [pdfFile] }) && navigator.share) {
-        try {
-          await navigator.share({
-            files: [pdfFile],
-            title: docType === "devis" ? pdfT.quote : pdfT.invoice,
-            text: "PDF",
-          });
-          toast.success(uiT.pdfReadyShare);
-          return;
-        } catch {
-          downloadPdf();
-          toast(uiT.shareUnavailableDownloadStarted);
-          return;
-        }
-      }
-
-      downloadPdf();
       toast.success(uiT.pdfDownloaded);
     } catch {
       const message = uiT.pdfUnknownError;
@@ -592,62 +535,7 @@ export function QuoteInvoiceApp({
   const saveInvoice = async () => {
     if (isSavingInvoice) return;
 
-    const payload: InvoicePayload = {
-      documentType: docType,
-      invoiceNumber: formattedInvoiceNumber,
-      clientName,
-      clientPhone,
-      clientAddress,
-      clientIce,
-      items: items.map((item) => ({
-        description: item.description,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-      })),
-      totalHT,
-      vatRate,
-      totalTTC,
-      isVatEnabled,
-      issuedAt: new Date().toISOString(),
-      fullState: {
-        uiLanguage,
-        invoiceContentLanguage,
-        documentType: docType,
-        invoiceNumber: formattedInvoiceNumber,
-        client: {
-          name: clientName,
-          phone: clientPhone,
-          address: clientAddress,
-          ice: clientIce,
-        },
-        items: items.map((item) => ({
-          description: item.description,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          lineTotal: item.quantity * item.unitPrice,
-        })),
-        totals: {
-          totalHT,
-          vatRate,
-          vatAmount,
-          totalTTC,
-          isVatEnabled,
-        },
-        issuedAt: new Date().toISOString(),
-        settings: {
-          invoicePrefix: settings.invoicePrefix,
-          invoiceSequence: settings.invoiceSequence,
-          autoIncrementInvoiceNumber: settings.autoIncrementInvoiceNumber,
-        },
-        businessProfile: {
-          businessName,
-          businessAddress,
-          businessPhone,
-          businessIce,
-          businessLogoUrl,
-        },
-      },
-    };
+    const payload = buildInvoicePayload();
 
     setIsSavingInvoice(true);
     try {
