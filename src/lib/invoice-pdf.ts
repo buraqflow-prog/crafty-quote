@@ -1,8 +1,6 @@
-import type { Json } from "@/integrations/supabase/types";
-
 type DownloadInvoicePdfInput = {
   invoiceId: string;
-  payload: Json;
+  payload: unknown;
   fallback: {
     documentType: string;
     invoiceNumber: string | null;
