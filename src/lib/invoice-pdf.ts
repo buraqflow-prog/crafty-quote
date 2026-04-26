@@ -369,11 +369,32 @@ async function generateInvoicePdf(data: NormalizedInvoicePdfData) {
     </footer>
   `;
 
-  document.body.appendChild(template);
+  const sandbox = document.createElement("iframe");
+  sandbox.style.position = "fixed";
+  sandbox.style.left = "-99999px";
+  sandbox.style.top = "0";
+  sandbox.style.width = "1px";
+  sandbox.style.height = "1px";
+  sandbox.style.border = "0";
+  sandbox.setAttribute("aria-hidden", "true");
+
+  document.body.appendChild(sandbox);
+
+  const sandboxDoc = sandbox.contentDocument;
+  if (!sandboxDoc) {
+    sandbox.remove();
+    throw new Error("PDF rendering sandbox unavailable");
+  }
+
+  sandboxDoc.open();
+  sandboxDoc.write(`<!doctype html><html><head><meta charset="utf-8"/></head><body style="margin:0;background:#ffffff;"></body></html>`);
+  sandboxDoc.close();
+
+  sandboxDoc.body.appendChild(template);
 
   try {
-    if (document.fonts?.ready) {
-      await document.fonts.ready;
+    if (sandboxDoc.fonts?.ready) {
+      await sandboxDoc.fonts.ready;
     }
 
     const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import("html2canvas"), import("jspdf")]);
@@ -384,6 +405,8 @@ async function generateInvoicePdf(data: NormalizedInvoicePdfData) {
         useCORS: true,
         backgroundColor: "#ffffff",
         logging: false,
+        windowWidth: template.scrollWidth,
+        windowHeight: template.scrollHeight,
       });
 
     let canvas: HTMLCanvasElement;
@@ -437,6 +460,7 @@ async function generateInvoicePdf(data: NormalizedInvoicePdfData) {
     pdf.save(`${data.documentType}_${safeNumber}.pdf`);
   } finally {
     template.remove();
+    sandbox.remove();
   }
 }
 
