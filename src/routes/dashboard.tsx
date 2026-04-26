@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { LoadingSpinner } from "@/components/loading-spinner";
 
-const DashboardPage = lazy(() => import("@/routes/dashboard-page").then((module) => ({ default: module.DashboardPage })));
+const DashboardPage = lazy(() => import("@/routes/-dashboard-page").then((module) => ({ default: module.DashboardPage })));
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardRoute,

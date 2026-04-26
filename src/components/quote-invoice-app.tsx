@@ -498,12 +498,44 @@ export function QuoteInvoiceApp({
     },
   });
 
+  const validateInvoicePayload = (payload: InvoicePayload) => {
+    const issues: string[] = [];
+
+    if (!payload.invoiceNumber?.trim()) {
+      issues.push("invoiceNumber");
+    }
+
+    if (!payload.documentType) {
+      issues.push("documentType");
+    }
+
+    if (!Array.isArray(payload.items) || payload.items.length === 0) {
+      issues.push("items");
+    }
+
+    if (!Number.isFinite(payload.totalHT) || !Number.isFinite(payload.totalTTC)) {
+      issues.push("totals");
+    }
+
+    return {
+      isValid: issues.length === 0,
+      issues,
+    };
+  };
+
   const generatePdf = async () => {
     if (isExporting) return;
 
     setIsExporting(true);
     try {
       const payload = buildInvoicePayload();
+      console.log("Form Data Payload:", payload);
+
+      const validation = validateInvoicePayload(payload);
+      if (!validation.isValid) {
+        throw new Error(`Payload invalide (${validation.issues.join(", ")})`);
+      }
+
       await downloadInvoicePdf({
         invoiceId: payload.invoiceNumber,
         payload,
@@ -516,8 +548,9 @@ export function QuoteInvoiceApp({
         },
       });
       toast.success(uiT.pdfDownloaded);
-    } catch {
-      const message = uiT.pdfUnknownError;
+    } catch (error) {
+      const message = error instanceof Error && error.message ? error.message : uiT.pdfUnknownError;
+      console.error("PDF generation failed:", error);
       toast.error(message);
       window.alert(message);
     } finally {
@@ -557,6 +590,13 @@ export function QuoteInvoiceApp({
     if (isSavingInvoice) return;
 
     const payload = buildInvoicePayload();
+    console.log("Form Data Payload:", payload);
+
+    const validation = validateInvoicePayload(payload);
+    if (!validation.isValid) {
+      toast.error(`Données invalides (${validation.issues.join(", ")})`);
+      return;
+    }
 
     setIsSavingInvoice(true);
     try {
@@ -571,7 +611,8 @@ export function QuoteInvoiceApp({
         }
         toast(uiT.offlineQueued);
       }
-    } catch {
+    } catch (error) {
+      console.error("Save invoice failed:", error);
       toast.error(uiT.documentSaveError);
     } finally {
       setIsSavingInvoice(false);
