@@ -847,9 +847,8 @@ export function QuoteInvoiceApp({
 
                   <div className="mt-3 space-y-2">
                     <label className="text-sm font-medium text-foreground">{t.invoiceContentLanguageLabel}</label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <Button type="button" size="sm" variant={invoiceContentLanguage === "fr" ? "default" : "outline"} onClick={() => setInvoiceContentLanguage("fr")}>{t.languageFr}</Button>
-                      <Button type="button" size="sm" variant={invoiceContentLanguage === "ar" ? "default" : "outline"} onClick={() => setInvoiceContentLanguage("ar")}>{t.languageAr}</Button>
                       <Button type="button" size="sm" variant={invoiceContentLanguage === "en" ? "default" : "outline"} onClick={() => setInvoiceContentLanguage("en")}>{t.languageEn}</Button>
                     </div>
                   </div>
