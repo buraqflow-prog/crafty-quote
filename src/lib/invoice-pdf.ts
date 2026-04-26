@@ -308,12 +308,25 @@ export async function downloadInvoicePdf({ invoiceId, payload, fallback }: Downl
 
     const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import("html2canvas"), import("jspdf")]);
 
-    const canvas = await html2canvas(template, {
-      scale: 3,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      logging: false,
-    });
+    const renderCanvas = async (scale: number) =>
+      html2canvas(template, {
+        scale,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+      });
+
+    let canvas: HTMLCanvasElement;
+    try {
+      canvas = await renderCanvas(3);
+    } catch {
+      template.querySelectorAll("img").forEach((img) => img.remove());
+      try {
+        canvas = await renderCanvas(2);
+      } catch {
+        canvas = await renderCanvas(1);
+      }
+    }
 
     const orientation = canvas.width > canvas.height ? "landscape" : "portrait";
     const pdf = new jsPDF({ orientation, unit: "mm", format: "a4" });
