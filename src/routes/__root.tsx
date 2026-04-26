@@ -1,7 +1,9 @@
-import { useEffect } from "react";
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Suspense, useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { LoadingSpinner } from "@/components/loading-spinner";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth";
 import { setupPwaRegistration } from "@/lib/pwa";
@@ -36,7 +38,7 @@ function NotFoundComponent() {
   );
 }
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -77,16 +79,20 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const { queryClient } = Route.useRouteContext();
+
   useEffect(() => {
     setupPwaRegistration();
   }, []);
 
   return (
-    <AuthProvider>
-      <UiLanguageProvider>
-        <RootContent />
-      </UiLanguageProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <UiLanguageProvider>
+          <RootContent />
+        </UiLanguageProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
@@ -95,7 +101,9 @@ function RootContent() {
 
   return (
     <div dir={isUiRtl ? "rtl" : "ltr"} className="w-full max-w-[100vw] overflow-x-hidden">
-      <Outlet />
+      <Suspense fallback={<LoadingSpinner />}>
+        <Outlet />
+      </Suspense>
       <Toaster richColors position="top-right" />
     </div>
   );
