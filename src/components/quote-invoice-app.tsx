@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Save, ArrowLeft } from "lucide-react";
+import { Settings, Plus, Trash2, FileText, LoaderCircle, LogOut, Save, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -159,7 +159,6 @@ const uiText = {
     totalTtcLabel: "Total TTC",
     generatePdfLabel: "Générer le PDF",
     generatingPdfLabel: "Génération en cours...",
-    sendWhatsAppLabel: "Envoyer par WhatsApp",
     saveInvoiceLabel: "Enregistrer",
     logoutLabel: "Déconnexion",
     networkOnline: "En ligne",
@@ -213,7 +212,6 @@ const uiText = {
     totalTtcLabel: "المجموع مع الضريبة",
     generatePdfLabel: "إنشاء الفاتورة",
     generatingPdfLabel: "جاري الإنشاء...",
-    sendWhatsAppLabel: "إرسال عبر واتساب",
     saveInvoiceLabel: "حفظ",
     logoutLabel: "تسجيل الخروج",
     networkOnline: "متصل",
@@ -267,7 +265,6 @@ const uiText = {
     totalTtcLabel: "Total incl. VAT",
     generatePdfLabel: "Generate PDF",
     generatingPdfLabel: "Generating...",
-    sendWhatsAppLabel: "Send via WhatsApp",
     saveInvoiceLabel: "Save",
     logoutLabel: "Logout",
     networkOnline: "Online",
@@ -559,31 +556,6 @@ export function QuoteInvoiceApp({
       }
       setIsExporting(false);
     }
-  };
-
-  const sendWhatsApp = () => {
-    const title = docType === "devis" ? pdfT.quote : pdfT.invoice;
-    const lines = items
-      .filter((item) => item.description.trim())
-      .map(
-        (item) =>
-          `• ${item.description} - ${item.quantity} x ${formatCurrency(item.unitPrice)} = ${formatCurrency(item.quantity * item.unitPrice)}`,
-      )
-      .join("\n");
-
-    const message = [
-      `${title} - ${today}`,
-      `${uiT.whatsappClient}: ${clientName || "-"}`,
-      `${uiT.whatsappClientPhone}: ${clientPhone || "-"}`,
-      lines,
-      `${pdfT.totalHt}: ${formatCurrency(totalHT)}`,
-      ...(isVatEnabled ? [`${pdfT.totalVat} (${vatRate}%): ${formatCurrency(vatAmount)}`] : []),
-      `${pdfT.total}: ${formatCurrency(totalTTC)}`,
-    ]
-      .filter(Boolean)
-      .join("\n");
-
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   };
 
   const saveInvoice = async () => {
@@ -895,9 +867,6 @@ export function QuoteInvoiceApp({
                 <Button type="button" className="h-11" onClick={generatePdf} disabled={isExporting}>
                   {isExporting ? <LoaderCircle className="animate-spin" /> : <FileText />}
                   {isExporting ? t.generatingPdfLabel : t.generatePdfLabel}
-                </Button>
-                <Button type="button" variant="secondary" className="h-11" onClick={sendWhatsApp}>
-                  <MessageCircle /> {t.sendWhatsAppLabel}
                 </Button>
               </div>
             </div>
