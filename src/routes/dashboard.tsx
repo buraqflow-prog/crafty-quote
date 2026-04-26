@@ -186,7 +186,19 @@ function DashboardPage() {
                                       totalTtc: Number(invoice.total_ttc ?? 0),
                                     },
                                   });
-                                } catch {
+                                } catch (error) {
+                                  console.error("Dashboard PDF generation failed", {
+                                    error,
+                                    invoiceId: invoice.id,
+                                    payloadPassedToPdfGenerator: invoice.payload,
+                                    fallback: {
+                                      documentType: invoice.document_type,
+                                      invoiceNumber: invoice.invoice_number,
+                                      clientName: invoice.client_name,
+                                      issuedAt: invoice.issued_at,
+                                      totalTtc: Number(invoice.total_ttc ?? 0),
+                                    },
+                                  });
                                   toast.error(t.pdfGenerationError);
                                 }
                               }}
