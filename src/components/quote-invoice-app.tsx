@@ -31,7 +31,7 @@ const DRAFT_STORAGE_KEY = "craftsman_invoice_draft_v1";
 
 type InvoiceDraft = {
   uiLanguage: AppLanguage;
-  invoiceContentLanguage: AppLanguage;
+  invoiceContentLanguage: "fr" | "en";
   docType: DocumentType;
   clientName: string;
   clientPhone: string;
@@ -61,25 +61,6 @@ const invoicePdfText = {
     closing: "Arrêté le présent",
     sum: "à la somme de",
     thanks: "Merci pour votre confiance",
-  },
-  ar: {
-    quote: "عرض سعر",
-    invoice: "فاتورة",
-    emitter: "المُصدر",
-    client: "العميل",
-    details: "تفاصيل الخدمات",
-    lines: "سطر",
-    description: "الوصف",
-    price: "السعر",
-    quantity: "الكمية",
-    total: "الإجمالي",
-    totalHt: "المجموع قبل الضريبة",
-    totalVat: "الضريبة",
-    totalTtc: "المجموع مع الضريبة",
-    totalGlobal: "المجموع الكلي",
-    closing: "تم توقيف هذه",
-    sum: "على مبلغ",
-    thanks: "شكرًا لثقتكم",
   },
   en: {
     quote: "QUOTE",
@@ -297,7 +278,7 @@ export function QuoteInvoiceApp({
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<BusinessSettings>(emptySettings);
   const [settingsDraft, setSettingsDraft] = useState<BusinessSettings>(settings);
-  const [invoiceContentLanguage, setInvoiceContentLanguage] = useState<AppLanguage>("fr");
+  const [invoiceContentLanguage, setInvoiceContentLanguage] = useState<"fr" | "en">("fr");
 
   const [docType, setDocType] = useState<DocumentType>("devis");
   const [clientName, setClientName] = useState("");
@@ -312,7 +293,6 @@ export function QuoteInvoiceApp({
   const [isOnline, setIsOnline] = useState(true);
   const pdfTemplateRef = useRef<HTMLDivElement>(null);
   const isUiArabic = uiLanguage === "ar";
-  const isInvoiceArabic = invoiceContentLanguage === "ar";
   const t = uiText[uiLanguage];
   const uiT = uiDictionary[uiLanguage];
   const pdfT = invoicePdfText[invoiceContentLanguage];
@@ -356,11 +336,7 @@ export function QuoteInvoiceApp({
 
     try {
       const draft = JSON.parse(rawDraft) as Partial<InvoiceDraft>;
-      setInvoiceContentLanguage(
-        draft.invoiceContentLanguage === "ar" || draft.invoiceContentLanguage === "en"
-          ? draft.invoiceContentLanguage
-          : "fr",
-      );
+      setInvoiceContentLanguage(draft.invoiceContentLanguage === "en" ? "en" : "fr");
       setDocType(draft.docType === "facture" ? "facture" : "devis");
       setClientName(typeof draft.clientName === "string" ? draft.clientName : "");
       setClientPhone(typeof draft.clientPhone === "string" ? draft.clientPhone : "");
