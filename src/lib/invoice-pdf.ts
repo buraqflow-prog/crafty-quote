@@ -1,8 +1,6 @@
-import type { Json } from "@/integrations/supabase/types";
-
 type DownloadInvoicePdfInput = {
   invoiceId: string;
-  payload: Json;
+  payload: unknown;
   fallback: {
     documentType: string;
     invoiceNumber: string | null;
@@ -21,6 +19,29 @@ type ParsedInvoiceItem = {
 };
 
 type InvoiceContentLanguage = "fr" | "en";
+
+type NormalizedInvoicePdfData = {
+  invoiceId: string;
+  documentType: string;
+  invoiceNumber: string;
+  clientName: string;
+  clientPhone: string;
+  clientAddress: string;
+  clientIce: string;
+  issuedAt: string;
+  totalHt: number;
+  vatRate: number;
+  vatAmount: number;
+  totalTtc: number;
+  isVatEnabled: boolean;
+  items: ParsedInvoiceItem[];
+  invoiceContentLanguage: InvoiceContentLanguage;
+  businessName: string;
+  businessAddress: string;
+  businessPhone: string;
+  businessIce: string;
+  businessLogoUrl: string;
+};
 
 const invoicePdfText = {
   fr: {
@@ -82,6 +103,15 @@ function toString(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
 }
 
+function parseMaybeJson(value: unknown): unknown {
+  if (typeof value !== "string") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}
+
 function formatMad(amount: number) {
   return new Intl.NumberFormat("fr-MA", {
     style: "currency",
@@ -109,10 +139,11 @@ function formatDate(value: string) {
 }
 
 function normalizeItems(source: unknown): ParsedInvoiceItem[] {
-  if (!Array.isArray(source)) return [];
+  const parsedSource = parseMaybeJson(source);
+  if (!Array.isArray(parsedSource)) return [];
 
-  return source.map((item, index) => {
-    const obj = toRecord(item);
+  return parsedSource.map((item, index) => {
+    const obj = toRecord(parseMaybeJson(item));
     const quantity = toNumber(obj?.quantity, 1);
     const unitPrice = toNumber(obj?.unitPrice, 0);
     const explicitLineTotal = toNumber(obj?.lineTotal, Number.NaN);
@@ -159,44 +190,83 @@ async function imageUrlToDataUrl(url: string): Promise<string | null> {
   }
 }
 
-export async function downloadInvoicePdf({ invoiceId, payload, fallback }: DownloadInvoicePdfInput) {
-  const payloadObj = toRecord(payload);
-  const fullState = toRecord(payloadObj?.fullState);
-  const fullTotals = toRecord(fullState?.totals);
-  const fullClient = toRecord(fullState?.client);
-  const businessProfile = toRecord(fullState?.businessProfile);
+function buildInvoicePdfDataFromPayload({ invoiceId, payload, fallback }: DownloadInvoicePdfInput): NormalizedInvoicePdfData {
+  const parsedPayload = parseMaybeJson(payload);
+  const payloadObj = toRecord(parsedPayload);
+  const fullState = toRecord(parseMaybeJson(payloadObj?.fullState));
+  const fullTotals = toRecord(parseMaybeJson(fullState?.totals));
+  const fullClient = toRecord(parseMaybeJson(fullState?.client));
+  const businessProfile = toRecord(parseMaybeJson(fullState?.businessProfile));
 
   const documentType =
-    toString(fullState?.documentType) || toString(payloadObj?.documentType) || fallback.documentType;
+    toString(fullState?.documentType) ||
+    toString(payloadObj?.documentType) ||
+    fallback.documentType ||
+    "facture";
+
   const invoiceNumber =
-    toString(fullState?.invoiceNumber) || toString(payloadObj?.invoiceNumber) || fallback.invoiceNumber || invoiceId;
+    toString(fullState?.invoiceNumber) ||
+    toString(payloadObj?.invoiceNumber) ||
+    fallback.invoiceNumber ||
+    invoiceId;
+
   const clientName =
-    toString(fullClient?.name) || toString(payloadObj?.clientName) || fallback.clientName || "-";
+    toString(fullClient?.name) ||
+    toString(payloadObj?.clientName) ||
+    fallback.clientName ||
+    "-";
+
   const issuedAt =
-    toString(fullState?.issuedAt) || toString(payloadObj?.issuedAt) || fallback.issuedAt;
-  const totalTtc =
-    toNumber(fullTotals?.totalTTC, Number.NaN) || toNumber(payloadObj?.totalTTC, fallback.totalTtc);
-  const totalHt = toNumber(fullTotals?.totalHT, toNumber(payloadObj?.totalHT, 0));
-  const vatRate = toNumber(fullTotals?.vatRate, toNumber(payloadObj?.vatRate, 0));
-  const vatAmount = toNumber(fullTotals?.vatAmount, Math.max(0, totalTtc - totalHt));
-  const isVatEnabled = Boolean(fullTotals?.isVatEnabled ?? vatRate > 0);
-  const invoiceContentLanguageRaw = toString(fullState?.invoiceContentLanguage, "fr");
-  const invoiceContentLanguage: InvoiceContentLanguage =
-    invoiceContentLanguageRaw === "en" ? "en" : "fr";
-  const pdfT = invoicePdfText[invoiceContentLanguage];
-  const businessName = toString(businessProfile?.businessName, "Votre entreprise");
-  const businessAddress = toString(businessProfile?.businessAddress, "Adresse non renseignée");
-  const businessPhone = toString(businessProfile?.businessPhone, "-");
-  const businessIce = toString(businessProfile?.businessIce, "");
-  const businessLogoUrl = toString(businessProfile?.businessLogoUrl, "");
-  const businessLogoDataUrl = businessLogoUrl ? await imageUrlToDataUrl(businessLogoUrl) : null;
+    toString(fullState?.issuedAt) ||
+    toString(payloadObj?.issuedAt) ||
+    fallback.issuedAt;
 
   const items = normalizeItems(fullState?.items ?? payloadObj?.items);
-  const safeClientName = clientName || "-";
-  const clientPhone = toString(fullClient?.phone, toString(payloadObj?.clientPhone, "-")) || "-";
-  const clientAddress = toString(fullClient?.address, toString(payloadObj?.clientAddress, ""));
-  const clientIce = toString(fullClient?.ice, toString(payloadObj?.clientIce, ""));
-  const documentTitle = documentType === "devis" ? pdfT.quote : pdfT.invoice;
+  const itemsTotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
+
+  const totalHt = toNumber(fullTotals?.totalHT, toNumber(payloadObj?.totalHT, itemsTotal));
+  const totalTtc = toNumber(fullTotals?.totalTTC, toNumber(payloadObj?.totalTTC, fallback.totalTtc));
+  const vatRate = toNumber(fullTotals?.vatRate, toNumber(payloadObj?.vatRate, 0));
+  const vatAmount = toNumber(fullTotals?.vatAmount, Math.max(0, totalTtc - totalHt));
+  const isVatEnabled = Boolean(fullTotals?.isVatEnabled ?? payloadObj?.isVatEnabled ?? vatRate > 0);
+
+  const invoiceContentLanguageRaw =
+    toString(fullState?.invoiceContentLanguage) ||
+    toString(fullState?.language) ||
+    toString(payloadObj?.invoiceContentLanguage) ||
+    toString(payloadObj?.language) ||
+    "fr";
+
+  const invoiceContentLanguage: InvoiceContentLanguage = invoiceContentLanguageRaw === "en" ? "en" : "fr";
+
+  return {
+    invoiceId,
+    documentType,
+    invoiceNumber,
+    clientName,
+    clientPhone: toString(fullClient?.phone, toString(payloadObj?.clientPhone, "-")) || "-",
+    clientAddress: toString(fullClient?.address, toString(payloadObj?.clientAddress, "")),
+    clientIce: toString(fullClient?.ice, toString(payloadObj?.clientIce, "")),
+    issuedAt,
+    totalHt,
+    vatRate,
+    vatAmount,
+    totalTtc,
+    isVatEnabled,
+    items,
+    invoiceContentLanguage,
+    businessName: toString(businessProfile?.businessName, "Votre entreprise"),
+    businessAddress: toString(businessProfile?.businessAddress, "Adresse non renseignée"),
+    businessPhone: toString(businessProfile?.businessPhone, "-"),
+    businessIce: toString(businessProfile?.businessIce, ""),
+    businessLogoUrl: toString(businessProfile?.businessLogoUrl, ""),
+  };
+}
+
+async function generateInvoicePdf(data: NormalizedInvoicePdfData) {
+  const pdfT = invoicePdfText[data.invoiceContentLanguage];
+  const businessLogoDataUrl = data.businessLogoUrl ? await imageUrlToDataUrl(data.businessLogoUrl) : null;
+  const documentTitle = data.documentType === "devis" ? pdfT.quote : pdfT.invoice;
 
   const template = document.createElement("div");
   template.style.position = "fixed";
@@ -210,7 +280,7 @@ export async function downloadInvoicePdf({ invoiceId, payload, fallback }: Downl
   template.style.fontFamily = '"Plus Jakarta Sans", "Inter", system-ui, sans-serif';
   template.style.boxSizing = "border-box";
 
-  const rows = items
+  const rows = data.items
     .map(
       (item) => `
       <tr style="background:#ffffff;">
@@ -233,8 +303,8 @@ export async function downloadInvoicePdf({ invoiceId, payload, fallback }: Downl
           ? `<img src="${escapeHtml(businessLogoDataUrl)}" alt="logo" style="height:128px;width:auto;object-fit:contain;" />`
           : `<div style="display:flex;height:128px;width:160px;align-items:center;justify-content:center;border:1px solid #111111;border-radius:999px;font-size:12px;font-weight:500;color:#111111;">${pdfT.logoFallback}</div>`}
         <div style="display:flex;gap:8px;">
-          <span style="border:1px solid #111111;border-radius:999px;padding:4px 16px;font-size:14px;font-weight:500;color:#111111;">${documentTitle} n°${escapeHtml(invoiceNumber)}</span>
-          <span style="border:1px solid #111111;border-radius:999px;padding:4px 16px;font-size:14px;font-weight:500;color:#111111;">${escapeHtml(formatDate(issuedAt))}</span>
+          <span style="border:1px solid #111111;border-radius:999px;padding:4px 16px;font-size:14px;font-weight:500;color:#111111;">${documentTitle} n°${escapeHtml(data.invoiceNumber)}</span>
+          <span style="border:1px solid #111111;border-radius:999px;padding:4px 16px;font-size:14px;font-weight:500;color:#111111;">${escapeHtml(formatDate(data.issuedAt))}</span>
         </div>
       </div>
     </header>
@@ -242,22 +312,22 @@ export async function downloadInvoicePdf({ invoiceId, payload, fallback }: Downl
     <section style="margin-bottom:32px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
       <div style="border:1px solid #000000;background:#ffffff;padding:16px;">
         <p style="margin:0;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#111111;">${pdfT.emitter}</p>
-        <p style="margin:8px 0 0;font-size:14px;font-weight:700;text-transform:uppercase;color:#111111;">${escapeHtml(businessName)}</p>
-        <p style="margin:4px 0 0;font-size:14px;line-height:1.5;color:#111111;white-space:pre-line;">${escapeHtml(businessAddress)}</p>
-        <p style="margin:4px 0 0;font-size:14px;color:#111111;">${escapeHtml(businessPhone)}</p>
-        ${businessIce ? `<p style="margin:4px 0 0;font-size:14px;color:#111111;">${pdfT.businessIceLabel}: ${escapeHtml(businessIce)}</p>` : ""}
+        <p style="margin:8px 0 0;font-size:14px;font-weight:700;text-transform:uppercase;color:#111111;">${escapeHtml(data.businessName)}</p>
+        <p style="margin:4px 0 0;font-size:14px;line-height:1.5;color:#111111;white-space:pre-line;">${escapeHtml(data.businessAddress)}</p>
+        <p style="margin:4px 0 0;font-size:14px;color:#111111;">${escapeHtml(data.businessPhone)}</p>
+        ${data.businessIce ? `<p style="margin:4px 0 0;font-size:14px;color:#111111;">${pdfT.businessIceLabel}: ${escapeHtml(data.businessIce)}</p>` : ""}
       </div>
       <div style="border:1px solid #000000;background:#ffffff;padding:16px;text-align:right;">
         <p style="margin:0;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#111111;">${pdfT.client}</p>
-        <p style="margin:8px 0 0;font-size:14px;font-weight:700;text-transform:uppercase;color:#111111;">${escapeHtml(safeClientName)}</p>
-        <p style="margin:4px 0 0;font-size:14px;color:#111111;">${escapeHtml(clientPhone)}</p>
-        ${clientAddress ? `<p style="margin:4px 0 0;font-size:14px;line-height:1.5;color:#111111;">${escapeHtml(clientAddress)}</p>` : ""}
-        ${clientIce ? `<p style="margin:4px 0 0;font-size:14px;color:#111111;">${pdfT.businessIceLabel}: ${escapeHtml(clientIce)}</p>` : ""}
+        <p style="margin:8px 0 0;font-size:14px;font-weight:700;text-transform:uppercase;color:#111111;">${escapeHtml(data.clientName || "-")}</p>
+        <p style="margin:4px 0 0;font-size:14px;color:#111111;">${escapeHtml(data.clientPhone)}</p>
+        ${data.clientAddress ? `<p style="margin:4px 0 0;font-size:14px;line-height:1.5;color:#111111;">${escapeHtml(data.clientAddress)}</p>` : ""}
+        ${data.clientIce ? `<p style="margin:4px 0 0;font-size:14px;color:#111111;">${pdfT.businessIceLabel}: ${escapeHtml(data.clientIce)}</p>` : ""}
       </div>
     </section>
     <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
       <p style="margin:0;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#111111;">${pdfT.details}</p>
-      <p style="margin:0;font-size:12px;font-weight:500;color:#111111;">${items.length} ${pdfT.lines}</p>
+      <p style="margin:0;font-size:12px;font-weight:500;color:#111111;">${data.items.length} ${pdfT.lines}</p>
     </div>
     <table style="width:100%;border-collapse:collapse;border:4px solid #000000;">
       <thead>
@@ -273,23 +343,23 @@ export async function downloadInvoicePdf({ invoiceId, payload, fallback }: Downl
       </tbody>
     </table>
     <div style="margin-top:20px;display:flex;justify-content:flex-end;">
-      ${isVatEnabled
+      ${data.isVatEnabled
         ? `<div style="width:320px;border:2px solid #000000;background:#ffffff;padding:12px;text-align:right;">
             <div style="display:flex;align-items:center;justify-content:space-between;color:#111111;font-size:14px;font-weight:700;">
-              <span>${pdfT.totalHt}</span><span>${escapeHtml(formatMad(totalHt))}</span>
+              <span>${pdfT.totalHt}</span><span>${escapeHtml(formatMad(data.totalHt))}</span>
             </div>
             <div style="margin-top:4px;display:flex;align-items:center;justify-content:space-between;color:#111111;font-size:14px;font-weight:700;">
-              <span>${pdfT.totalVat} (${vatRate}%)</span><span>${escapeHtml(formatMad(vatAmount))}</span>
+              <span>${pdfT.totalVat} (${data.vatRate}%)</span><span>${escapeHtml(formatMad(data.vatAmount))}</span>
             </div>
             <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;background:#000000;padding:12px;color:#ffffff;">
               <span style="font-size:14px;font-weight:900;">${pdfT.totalTtc}</span>
-              <strong style="font-size:18px;font-weight:900;">${escapeHtml(formatMad(totalTtc))}</strong>
+              <strong style="font-size:18px;font-weight:900;">${escapeHtml(formatMad(data.totalTtc))}</strong>
             </div>
           </div>`
         : `<div style="width:320px;border:2px solid #000000;background:#ffffff;padding:12px;">
             <div style="display:flex;align-items:center;justify-content:space-between;background:#000000;padding:12px;color:#ffffff;">
               <span style="font-size:14px;font-weight:900;">${pdfT.totalGlobal}</span>
-              <strong style="font-size:18px;font-weight:900;">${escapeHtml(formatMad(totalHt))}</strong>
+              <strong style="font-size:18px;font-weight:900;">${escapeHtml(formatMad(data.totalHt))}</strong>
             </div>
           </div>`}
     </div>
@@ -363,9 +433,14 @@ export async function downloadInvoicePdf({ invoiceId, payload, fallback }: Downl
       pageIndex += 1;
     }
 
-    const safeNumber = invoiceNumber.replace(/[^a-zA-Z0-9_-]/g, "_");
-    pdf.save(`${documentType}_${safeNumber}.pdf`);
+    const safeNumber = data.invoiceNumber.replace(/[^a-zA-Z0-9_-]/g, "_");
+    pdf.save(`${data.documentType}_${safeNumber}.pdf`);
   } finally {
     template.remove();
   }
+}
+
+export async function downloadInvoicePdf(input: DownloadInvoicePdfInput) {
+  const pdfData = buildInvoicePdfDataFromPayload(input);
+  await generateInvoicePdf(pdfData);
 }

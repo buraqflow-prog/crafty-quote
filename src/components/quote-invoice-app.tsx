@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Settings, Plus, Trash2, FileText, MessageCircle, LoaderCircle, LogOut, Save, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { downloadInvoicePdf } from "@/lib/invoice-pdf";
 import { uiDictionary } from "@/lib/ui-i18n";
 import { enqueueOfflineInvoice, saveInvoiceOnline, type InvoicePayload } from "@/lib/offline-invoice-sync";
 import type { UserProfile } from "@/lib/profile";
@@ -291,7 +292,6 @@ export function QuoteInvoiceApp({
   const [isExporting, setIsExporting] = useState(false);
   const [isSavingInvoice, setIsSavingInvoice] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
-  const pdfTemplateRef = useRef<HTMLDivElement>(null);
   const isUiArabic = uiLanguage === "ar";
   const t = uiText[uiLanguage];
   const uiT = uiDictionary[uiLanguage];
@@ -387,7 +387,6 @@ export function QuoteInvoiceApp({
   );
   const vatAmount = useMemo(() => (isVatEnabled ? totalHT * (vatRate / 100) : 0), [isVatEnabled, totalHT, vatRate]);
   const totalTTC = useMemo(() => totalHT + vatAmount, [totalHT, vatAmount]);
-  const amountInWords = useMemo(() => toFrenchCurrencyWords(totalTTC), [totalTTC]);
 
   const saveSettings = () => {
     setSettings(settingsDraft);
@@ -421,136 +420,80 @@ export function QuoteInvoiceApp({
   const businessIce = profile?.ice_number?.trim() || "";
   const businessLogoUrl = profile?.logo_url?.trim() || "";
 
+  const buildInvoicePayload = (): InvoicePayload => ({
+    documentType: docType,
+    invoiceNumber: formattedInvoiceNumber,
+    clientName,
+    clientPhone,
+    clientAddress,
+    clientIce,
+    items: items.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    })),
+    totalHT,
+    vatRate,
+    totalTTC,
+    isVatEnabled,
+    issuedAt: new Date().toISOString(),
+    fullState: {
+      uiLanguage,
+      invoiceContentLanguage,
+      documentType: docType,
+      invoiceNumber: formattedInvoiceNumber,
+      client: {
+        name: clientName,
+        phone: clientPhone,
+        address: clientAddress,
+        ice: clientIce,
+      },
+      items: items.map((item) => ({
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        lineTotal: item.quantity * item.unitPrice,
+      })),
+      totals: {
+        totalHT,
+        vatRate,
+        vatAmount,
+        totalTTC,
+        isVatEnabled,
+      },
+      issuedAt: new Date().toISOString(),
+      settings: {
+        invoicePrefix: settings.invoicePrefix,
+        invoiceSequence: settings.invoiceSequence,
+        autoIncrementInvoiceNumber: settings.autoIncrementInvoiceNumber,
+      },
+      businessProfile: {
+        businessName,
+        businessAddress,
+        businessPhone,
+        businessIce,
+        businessLogoUrl,
+      },
+    },
+  });
+
   const generatePdf = async () => {
-    if (isExporting || !pdfTemplateRef.current) return;
+    if (isExporting) return;
 
     setIsExporting(true);
     try {
-      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import("html2canvas"), import("jspdf")]);
-
-      const templateWidthPx = pdfTemplateRef.current.offsetWidth;
-      const templateHeightPx = pdfTemplateRef.current.offsetHeight;
-      const expectedA4HeightPx = templateWidthPx * (297 / 210);
-      const heightDelta = Math.abs(templateHeightPx - expectedA4HeightPx);
-
-      if (heightDelta > 8) {
-        throw new Error(`Template A4 invalide: hauteur attendue ${Math.round(expectedA4HeightPx)}px, actuelle ${Math.round(templateHeightPx)}px.`);
-      }
-
-      if (document.fonts?.ready) {
-        await document.fonts.ready;
-      }
-
-      const canvas = await html2canvas(pdfTemplateRef.current, {
-        scale: 3,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-        onclone: (clonedDoc) => {
-          clonedDoc.documentElement.style.backgroundColor = "#ffffff";
-          clonedDoc.documentElement.style.color = "#0f172a";
-          clonedDoc.body.style.backgroundColor = "#ffffff";
-          clonedDoc.body.style.color = "#0f172a";
-          clonedDoc.body.style.borderColor = "#cbd5e1";
-
-          const clonedTemplate = clonedDoc.getElementById("pdf-template");
-          if (clonedTemplate) {
-            clonedTemplate.style.backgroundColor = "#ffffff";
-            clonedTemplate.style.color = "#0f172a";
-            clonedTemplate.style.borderColor = "#cbd5e1";
-            clonedTemplate.style.fontFamily = '"Plus Jakarta Sans", "Inter", system-ui, sans-serif';
-            clonedTemplate.style.setProperty("--background", "#ffffff");
-            clonedTemplate.style.setProperty("--foreground", "#0f172a");
-            clonedTemplate.style.setProperty("--card", "#ffffff");
-            clonedTemplate.style.setProperty("--muted", "#f8fafc");
-            clonedTemplate.style.setProperty("--border", "#cbd5e1");
-            clonedTemplate.style.setProperty("--ring", "#94a3b8");
-
-            clonedTemplate.querySelectorAll<HTMLElement>("*").forEach((element) => {
-              element.style.color = element.style.color || "#0f172a";
-              element.style.borderColor = element.style.borderColor || "#cbd5e1";
-              if (!element.style.backgroundColor || element.style.backgroundColor === "oklch") {
-                element.style.backgroundColor = "transparent";
-              }
-              element.style.setProperty("--background", "#ffffff");
-              element.style.setProperty("--foreground", "#0f172a");
-              element.style.setProperty("--card", "#ffffff");
-              element.style.setProperty("--muted", "#f8fafc");
-              element.style.setProperty("--border", "#cbd5e1");
-              element.style.setProperty("--ring", "#94a3b8");
-            });
-          }
+      const payload = buildInvoicePayload();
+      await downloadInvoicePdf({
+        invoiceId: payload.invoiceNumber,
+        payload,
+        fallback: {
+          documentType: payload.documentType,
+          invoiceNumber: payload.invoiceNumber,
+          clientName: payload.clientName,
+          issuedAt: payload.issuedAt,
+          totalTtc: payload.totalTTC,
         },
       });
-
-      const orientation = canvas.width > canvas.height ? "landscape" : "portrait";
-      const pdf = new jsPDF({ orientation, unit: "mm", format: "a4" });
-      const pageWidth = orientation === "portrait" ? 210 : 297;
-      const pageHeight = orientation === "portrait" ? 297 : 210;
-      const margin = 10;
-      const printableWidth = pageWidth - margin * 2;
-      const printableHeight = pageHeight - margin * 2;
-
-      const canvasPageHeightPx = Math.floor((printableHeight * canvas.width) / printableWidth);
-      let renderedHeightPx = 0;
-      let pageIndex = 0;
-
-      while (renderedHeightPx < canvas.height) {
-        const sliceHeight = Math.min(canvasPageHeightPx, canvas.height - renderedHeightPx);
-        const pageCanvas = document.createElement("canvas");
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = sliceHeight;
-
-        const pageContext = pageCanvas.getContext("2d");
-        if (!pageContext) throw new Error("Impossible de créer le contexte canvas pour la pagination.");
-
-        pageContext.drawImage(canvas, 0, renderedHeightPx, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
-
-        const imageData = pageCanvas.toDataURL("image/jpeg", 0.98);
-        const imageHeightMm = (sliceHeight * printableWidth) / canvas.width;
-
-        if (pageIndex > 0) {
-          pdf.addPage("a4", orientation);
-        }
-
-        pdf.addImage(imageData, "JPEG", margin, margin, printableWidth, imageHeightMm);
-        renderedHeightPx += sliceHeight;
-        pageIndex += 1;
-      }
-
-      const safeClient = clientName.trim().replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\-]/g, "") || "client";
-      const fileName = `${docType}_${safeClient}_${Date.now()}.pdf`;
-      const pdfBlob = pdf.output("blob");
-      const pdfFile = new File([pdfBlob], fileName, { type: "application/pdf" });
-
-      const downloadPdf = () => {
-        const url = URL.createObjectURL(pdfBlob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
-      };
-
-      if (navigator.canShare?.({ files: [pdfFile] }) && navigator.share) {
-        try {
-          await navigator.share({
-            files: [pdfFile],
-            title: docType === "devis" ? pdfT.quote : pdfT.invoice,
-            text: "PDF",
-          });
-          toast.success(uiT.pdfReadyShare);
-          return;
-        } catch {
-          downloadPdf();
-          toast(uiT.shareUnavailableDownloadStarted);
-          return;
-        }
-      }
-
-      downloadPdf();
       toast.success(uiT.pdfDownloaded);
     } catch {
       const message = uiT.pdfUnknownError;
@@ -592,62 +535,7 @@ export function QuoteInvoiceApp({
   const saveInvoice = async () => {
     if (isSavingInvoice) return;
 
-    const payload: InvoicePayload = {
-      documentType: docType,
-      invoiceNumber: formattedInvoiceNumber,
-      clientName,
-      clientPhone,
-      clientAddress,
-      clientIce,
-      items: items.map((item) => ({
-        description: item.description,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-      })),
-      totalHT,
-      vatRate,
-      totalTTC,
-      isVatEnabled,
-      issuedAt: new Date().toISOString(),
-      fullState: {
-        uiLanguage,
-        invoiceContentLanguage,
-        documentType: docType,
-        invoiceNumber: formattedInvoiceNumber,
-        client: {
-          name: clientName,
-          phone: clientPhone,
-          address: clientAddress,
-          ice: clientIce,
-        },
-        items: items.map((item) => ({
-          description: item.description,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          lineTotal: item.quantity * item.unitPrice,
-        })),
-        totals: {
-          totalHT,
-          vatRate,
-          vatAmount,
-          totalTTC,
-          isVatEnabled,
-        },
-        issuedAt: new Date().toISOString(),
-        settings: {
-          invoicePrefix: settings.invoicePrefix,
-          invoiceSequence: settings.invoiceSequence,
-          autoIncrementInvoiceNumber: settings.autoIncrementInvoiceNumber,
-        },
-        businessProfile: {
-          businessName,
-          businessAddress,
-          businessPhone,
-          businessIce,
-          businessLogoUrl,
-        },
-      },
-    };
+    const payload = buildInvoicePayload();
 
     setIsSavingInvoice(true);
     try {
@@ -1009,117 +897,6 @@ export function QuoteInvoiceApp({
         </div>
       </section>
 
-      <div aria-hidden="true" dir="ltr" style={{ fontFamily: '"Plus Jakarta Sans", "Inter", sans-serif' }}>
-        <div
-          id="pdf-template"
-          ref={pdfTemplateRef}
-          className="absolute top-0 -left-[9999px] min-h-[1123px] w-[794px] bg-[#ffffff] px-10 py-9 text-[#111111]"
-        >
-          <header className="flex items-start justify-between gap-8">
-            <div>
-              <p className="mb-8 text-6xl font-normal uppercase tracking-tight text-[#111111]">{docType === "devis" ? pdfT.quote : pdfT.invoice}</p>
-            </div>
-
-            <div className="flex min-h-32 min-w-40 flex-col items-end justify-start gap-4">
-              {businessLogoUrl ? (
-                <img src={businessLogoUrl} alt={uiT.pdfLogoAlt} className="h-32 w-auto object-contain" />
-              ) : (
-                <div className="flex h-32 w-40 items-center justify-center rounded-full border border-[#111111] text-xs font-medium text-[#111111]">
-                  {uiT.logoFallback}
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">
-                  {docType === "devis" ? pdfT.quote : pdfT.invoice} n°{formattedInvoiceNumber}
-                </span>
-                <span className="rounded-full border border-[#111111] px-4 py-1 text-sm font-medium text-[#111111]">{today}</span>
-              </div>
-            </div>
-          </header>
-
-          <hr className="my-8 border-t border-[#111111]" />
-
-          <section className="mb-8 grid grid-cols-2 gap-6">
-            <div className="border border-[#000000] bg-[#ffffff] p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">{pdfT.emitter}</p>
-              <p className="mt-2 text-sm font-bold uppercase text-[#111111]">{businessName}</p>
-              <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-[#111111]">{businessAddress}</p>
-              <p className="mt-1 text-sm text-[#111111]">{businessPhone}</p>
-              {businessIce ? <p className="mt-1 text-sm text-[#111111]">{uiT.businessIceLabel}: {businessIce}</p> : null}
-            </div>
-
-            <div className="border border-[#000000] bg-[#ffffff] p-4 text-right">
-              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-[#111111]">{pdfT.client}</p>
-              <p className="mt-2 text-sm font-bold uppercase text-[#111111]">{clientName || "-"}</p>
-              <p className="mt-1 text-sm text-[#111111]">{clientPhone || "-"}</p>
-              {clientAddress.trim() && <p className="mt-1 text-sm leading-relaxed text-[#111111]">{clientAddress}</p>}
-              {clientIce.trim() && <p className="mt-1 text-sm text-[#111111]">{uiT.businessIceLabel} : {clientIce}</p>}
-            </div>
-          </section>
-
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs font-black uppercase tracking-[0.08em] text-[#111111]">{pdfT.details}</p>
-            <p className="text-xs font-medium text-[#111111]">{items.length} {pdfT.lines}</p>
-          </div>
-
-          <table className="w-full border-collapse border-[4px] border-[#000000]">
-            <thead>
-              <tr className="bg-[#000000] text-[#ffffff]">
-                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">{pdfT.description}</th>
-                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">{pdfT.price}</th>
-                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">{pdfT.quantity}</th>
-                <th className="border-[3px] border-[#000000] p-3 text-center text-xs font-black uppercase tracking-wider text-[#ffffff]">{pdfT.total}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={`pdf-${item.id}`} className="bg-[#ffffff]">
-                  <td className="break-all whitespace-normal border-[3px] border-[#000000] px-3 py-4 text-sm font-bold text-[#000000] break-words">{item.description || "-"}</td>
-                  <td className="border-[3px] border-[#000000] px-3 py-4 text-center text-base font-black text-[#000000]">{formatCurrency(item.unitPrice)}</td>
-                  <td className="border-[3px] border-[#000000] px-3 py-4 text-center text-sm font-black text-[#000000]">{item.quantity}</td>
-                  <td className="border-[3px] border-[#000000] px-3 py-4 text-center text-base font-black text-[#000000]">{formatCurrency(item.quantity * item.unitPrice)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="mt-5 flex justify-end">
-            {isVatEnabled ? (
-               <div className="w-80 border-2 border-[#000000] bg-[#ffffff] p-3 text-right">
-                <div className="flex items-center justify-between text-[#111111]">
-                  <span className="text-sm font-bold">{pdfT.totalHt}</span>
-                  <span className="text-sm font-bold">{formatCurrency(totalHT)}</span>
-                </div>
-                <div className="mt-1 flex items-center justify-between text-[#111111]">
-                  <span className="text-sm font-bold">{pdfT.totalVat} ({vatRate}%)</span>
-                  <span className="text-sm font-bold">{formatCurrency(vatAmount)}</span>
-                </div>
-                <div className="mt-2 flex items-center justify-between bg-[#000000] p-3 text-[#ffffff]">
-                  <span className="text-sm font-black">{pdfT.totalTtc}</span>
-                  <strong className="text-lg font-black">{formatCurrency(totalTTC)}</strong>
-                </div>
-              </div>
-            ) : (
-              <div className="w-80 border-2 border-[#000000] bg-[#ffffff] p-3">
-                <div className="flex items-center justify-between bg-[#000000] p-3 text-[#ffffff]">
-                  <span className="text-sm font-black">{pdfT.totalGlobal}</span>
-                  <strong className="text-lg font-black">{formatCurrency(totalHT)}</strong>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <p className="mt-8 text-sm font-semibold uppercase italic text-[#111111]">
-            {pdfT.closing} {docType === "devis" ? pdfT.quote : pdfT.invoice} {pdfT.sum} : {amountInWords.toUpperCase()}.
-          </p>
-
-          <footer className="mt-10">
-            <hr className="mb-2 border-t border-[#111111]" />
-            <p className="text-xs font-bold text-[#111111]">{pdfT.thanks}</p>
-          </footer>
-        </div>
-      </div>
     </main>
   );
 }
