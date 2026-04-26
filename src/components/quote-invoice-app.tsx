@@ -154,7 +154,7 @@ const uiText = {
   },
   ar: {
     appTitle: "عرض سعر / فاتورة",
-    appSubtitle: "مولّد أنيق للحرفيين",
+    appSubtitle: "مولّد أنيق للفواتير",
     languageToggle: "تغيير اللغة",
     languageFr: "Fr",
     languageAr: "Ar",
