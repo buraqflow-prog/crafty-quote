@@ -86,7 +86,7 @@ export function DashboardPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{t.totalTtc}</CardTitle>
               </CardHeader>
-              <CardContent>{isInvoicesLoading ? <Skeleton className="h-8 w-40" /> : <p className="text-2xl font-semibold text-foreground">{formatMad(totalTtc)}</p>}</CardContent>
+              <CardContent>{isInvoicesLoading ? <Skeleton className="h-8 w-40" /> : <p className="text-2xl font-semibold text-foreground">{formatAmount(totalTtc)}</p>}</CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
@@ -147,7 +147,7 @@ export function DashboardPage() {
                             {invoice.document_type}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right font-semibold">{formatMad(Number(invoice.total_ttc ?? 0))}</TableCell>
+                        <TableCell className="text-right font-semibold">{formatAmount(Number(invoice.total_ttc ?? 0))}</TableCell>
                         <TableCell>
                           <div className="flex items-center justify-end gap-1">
                             <Button asChild variant="ghost" size="icon" aria-label={t.viewDocument}>
@@ -170,10 +170,9 @@ export function DashboardPage() {
   );
 }
 
-function formatMad(amount: number) {
+function formatAmount(amount: number) {
   return new Intl.NumberFormat("fr-MA", {
-    style: "currency",
-    currency: "MAD",
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
 }
