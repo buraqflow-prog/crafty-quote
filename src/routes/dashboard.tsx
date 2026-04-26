@@ -1,7 +1,18 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
+import { Suspense, lazy } from "react";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { DashboardPage } from "@/routes/dashboard-page";
+import { LoadingSpinner } from "@/components/loading-spinner";
 
-export const Route = createLazyFileRoute("/dashboard")({
-  component: DashboardPage,
+const DashboardPage = lazy(() => import("@/routes/dashboard-page").then((module) => ({ default: module.DashboardPage })));
+
+export const Route = createFileRoute("/dashboard")({
+  component: DashboardRoute,
 });
+
+function DashboardRoute() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <DashboardPage />
+    </Suspense>
+  );
+}
