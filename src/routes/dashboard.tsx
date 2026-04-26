@@ -47,7 +47,7 @@ function DashboardPage() {
     const loadInvoices = async () => {
       const { data, error } = await supabase
         .from("invoices")
-        .select("id, issued_at, client_name, invoice_number, document_type, total_ttc, payload")
+        .select("id, issued_at, client_name, invoice_number, document_type, total_ttc")
         .eq("user_id", user.id)
         .order("issued_at", { ascending: false });
 
@@ -164,53 +164,6 @@ function DashboardPage() {
                               <Link to="/invoice/new">
                                 <Eye className="h-4 w-4" />
                               </Link>
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              aria-label={t.downloadPdf}
-                              onClick={async () => {
-                                console.log("Raw Payload from DB:", invoice.payload);
-
-                                const rawPayload = parseJsonValue(invoice.payload);
-                                const payloadRecord = toRecord(rawPayload);
-                                if (!payloadRecord || Object.keys(payloadRecord).length === 0) {
-                                  toast.error("Données du document corrompues");
-                                  return;
-                                }
-
-                                const mappedPayload = mapDashboardInvoiceToPdfPayload(invoice);
-                                try {
-                                  await downloadInvoicePdf({
-                                    invoiceId: invoice.id,
-                                    payload: mappedPayload,
-                                    fallback: {
-                                      documentType: invoice.document_type,
-                                      invoiceNumber: invoice.invoice_number,
-                                      clientName: invoice.client_name,
-                                      issuedAt: invoice.issued_at,
-                                      totalTtc: Number(invoice.total_ttc ?? 0),
-                                    },
-                                  });
-                                } catch (error) {
-                                  console.error("Dashboard PDF generation failed", {
-                                    error,
-                                    invoiceId: invoice.id,
-                                    payloadPassedToPdfGenerator: invoice.payload,
-                                    fallback: {
-                                      documentType: invoice.document_type,
-                                      invoiceNumber: invoice.invoice_number,
-                                      clientName: invoice.client_name,
-                                      issuedAt: invoice.issued_at,
-                                      totalTtc: Number(invoice.total_ttc ?? 0),
-                                    },
-                                  });
-                                  toast.error(t.pdfGenerationError);
-                                }
-                              }}
-                            >
-                              <Download className="h-4 w-4" />
                             </Button>
                           </div>
                         </TableCell>
