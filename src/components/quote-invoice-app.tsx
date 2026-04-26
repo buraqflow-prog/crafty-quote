@@ -558,31 +558,6 @@ export function QuoteInvoiceApp({
     }
   };
 
-  const sendWhatsApp = () => {
-    const title = docType === "devis" ? pdfT.quote : pdfT.invoice;
-    const lines = items
-      .filter((item) => item.description.trim())
-      .map(
-        (item) =>
-          `• ${item.description} - ${item.quantity} x ${formatCurrency(item.unitPrice)} = ${formatCurrency(item.quantity * item.unitPrice)}`,
-      )
-      .join("\n");
-
-    const message = [
-      `${title} - ${today}`,
-      `${uiT.whatsappClient}: ${clientName || "-"}`,
-      `${uiT.whatsappClientPhone}: ${clientPhone || "-"}`,
-      lines,
-      `${pdfT.totalHt}: ${formatCurrency(totalHT)}`,
-      ...(isVatEnabled ? [`${pdfT.totalVat} (${vatRate}%): ${formatCurrency(vatAmount)}`] : []),
-      `${pdfT.total}: ${formatCurrency(totalTTC)}`,
-    ]
-      .filter(Boolean)
-      .join("\n");
-
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
-  };
-
   const saveInvoice = async () => {
     if (isSavingInvoice) return;
 
@@ -892,9 +867,6 @@ export function QuoteInvoiceApp({
                 <Button type="button" className="h-11" onClick={generatePdf} disabled={isExporting}>
                   {isExporting ? <LoaderCircle className="animate-spin" /> : <FileText />}
                   {isExporting ? t.generatingPdfLabel : t.generatePdfLabel}
-                </Button>
-                <Button type="button" variant="secondary" className="h-11" onClick={sendWhatsApp}>
-                  <MessageCircle /> {t.sendWhatsAppLabel}
                 </Button>
               </div>
             </div>
