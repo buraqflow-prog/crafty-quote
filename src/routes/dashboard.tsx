@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Download, Eye, Plus } from "lucide-react";
+import { Eye, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppLayout } from "@/components/app-layout";
@@ -10,9 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/lib/auth";
-import { downloadInvoicePdf } from "@/lib/invoice-pdf";
 import { uiDictionary } from "@/lib/ui-i18n";
 import { useUiLanguage } from "@/lib/ui-language";
 
@@ -27,133 +25,7 @@ type InvoiceRow = {
   invoice_number: string | null;
   document_type: string;
   total_ttc: number;
-  payload: Json;
 };
-
-function toRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
-
-function toString(value: unknown, fallback = ""): string {
-  return typeof value === "string" ? value : fallback;
-}
-
-function toNumber(value: unknown, fallback = 0): number {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string") {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return fallback;
-}
-
-function parseJsonValue(value: unknown): unknown {
-  if (typeof value !== "string") return value;
-  try {
-    return JSON.parse(value);
-  } catch {
-    return value;
-  }
-}
-
-function mapDashboardInvoiceToPdfPayload(invoice: InvoiceRow) {
-  const rawPayload = parseJsonValue(invoice.payload);
-  const payloadRecord = toRecord(rawPayload);
-  const fullState = toRecord(parseJsonValue(payloadRecord?.fullState));
-  const client = toRecord(parseJsonValue(fullState?.client));
-  const totals = toRecord(parseJsonValue(fullState?.totals));
-  const businessProfile = toRecord(parseJsonValue(fullState?.businessProfile));
-  const settings = toRecord(parseJsonValue(fullState?.settings));
-
-  const rawItems = Array.isArray(fullState?.items)
-    ? fullState.items
-    : Array.isArray(payloadRecord?.items)
-      ? payloadRecord.items
-      : [];
-
-  const items = rawItems.map((item, index) => {
-    const entry = toRecord(parseJsonValue(item));
-    const quantity = toNumber(entry?.quantity, 1);
-    const unitPrice = toNumber(entry?.unitPrice, 0);
-    const lineTotal = toNumber(entry?.lineTotal, quantity * unitPrice);
-
-    return {
-      id: toString(entry?.id, `${index + 1}`),
-      description: toString(entry?.description, "N/A"),
-      quantity,
-      unitPrice,
-      lineTotal,
-    };
-  });
-
-  const computedTotalHt = items.reduce((sum, item) => sum + item.lineTotal, 0);
-  const totalHT = toNumber(payloadRecord?.totalHT, toNumber(totals?.totalHT, computedTotalHt));
-  const totalTTC = toNumber(invoice.total_ttc, toNumber(payloadRecord?.totalTTC, toNumber(totals?.totalTTC, totalHT)));
-  const vatRate = toNumber(payloadRecord?.vatRate, toNumber(totals?.vatRate, 0));
-  const vatAmount = toNumber(totals?.vatAmount, Math.max(0, totalTTC - totalHT));
-  const invoiceNumber =
-    invoice.invoice_number ||
-    toString(fullState?.invoiceNumber, toString(payloadRecord?.invoiceNumber, invoice.id));
-  const documentType =
-    invoice.document_type ||
-    toString(fullState?.documentType, toString(payloadRecord?.documentType, "facture"));
-  const issuedAt =
-    invoice.issued_at ||
-    toString(fullState?.issuedAt, toString(payloadRecord?.issuedAt, new Date().toISOString()));
-  const clientName =
-    invoice.client_name ||
-    toString(client?.name, toString(payloadRecord?.clientName, "N/A"));
-
-  return {
-    documentType,
-    invoiceNumber,
-    clientName,
-    clientPhone: toString(client?.phone, toString(payloadRecord?.clientPhone, "N/A")),
-    clientAddress: toString(client?.address, toString(payloadRecord?.clientAddress, "N/A")),
-    clientIce: toString(client?.ice, toString(payloadRecord?.clientIce, "N/A")),
-    items,
-    totalHT,
-    vatRate,
-    totalTTC,
-    isVatEnabled: Boolean(totals?.isVatEnabled ?? payloadRecord?.isVatEnabled ?? vatRate > 0),
-    issuedAt,
-    fullState: {
-      uiLanguage: toString(fullState?.uiLanguage, "fr"),
-      invoiceContentLanguage: toString(fullState?.invoiceContentLanguage, "fr") === "en" ? "en" : "fr",
-      documentType,
-      invoiceNumber,
-      client: {
-        name: clientName,
-        phone: toString(client?.phone, toString(payloadRecord?.clientPhone, "N/A")),
-        address: toString(client?.address, toString(payloadRecord?.clientAddress, "N/A")),
-        ice: toString(client?.ice, toString(payloadRecord?.clientIce, "N/A")),
-      },
-      items,
-      totals: {
-        totalHT,
-        vatRate,
-        vatAmount,
-        totalTTC,
-        isVatEnabled: Boolean(totals?.isVatEnabled ?? payloadRecord?.isVatEnabled ?? vatRate > 0),
-      },
-      issuedAt,
-      settings: {
-        invoicePrefix: toString(settings?.invoicePrefix, ""),
-        invoiceSequence: toString(settings?.invoiceSequence, ""),
-        autoIncrementInvoiceNumber: Boolean(settings?.autoIncrementInvoiceNumber),
-      },
-      businessProfile: {
-        businessName: toString(businessProfile?.businessName, ""),
-        businessAddress: toString(businessProfile?.businessAddress, ""),
-        businessPhone: toString(businessProfile?.businessPhone, ""),
-        businessIce: toString(businessProfile?.businessIce, ""),
-        businessLogoUrl: toString(businessProfile?.businessLogoUrl, ""),
-      },
-    },
-  };
-}
 
 function DashboardPage() {
   const { user } = useAuth();
