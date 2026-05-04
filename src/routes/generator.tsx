@@ -1,9 +1,8 @@
-import { Navigate, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/generator")({
-  component: GeneratorPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/invoice/new" });
+  },
+  component: () => null,
 });
-
-function GeneratorPage() {
-  return <Navigate to="/invoice/new" />;
-}
